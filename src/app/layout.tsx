@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import AuthWrapper from "./AuthWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        {/* Auth provider wraps the app */}
+        {/* eslint-disable-next-line @next/next/no-head-element */}
+        {/* We keep minimal changes; provider only */}
+        <AuthWrapper>{children}</AuthWrapper>
       </body>
     </html>
   );

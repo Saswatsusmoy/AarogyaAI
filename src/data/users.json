@@ -1,0 +1,7 @@
+{
+  "doctor1": {
+    "username": "doctor1",
+    "passwordHash": "h917087411",
+    "role": "doctor"
+  }
+}

@@ -21,7 +21,14 @@ export async function POST(req: NextRequest) {
   }
   const existing = await prisma.user.findUnique({ where: { username } });
   if (existing) return NextResponse.json({ error: "User already exists" }, { status: 409 });
-  await prisma.user.create({ data: { username, passwordHash: hashPassword(password), role } });
+  await prisma.$transaction(async (tx) => {
+    const created = await tx.user.create({ data: { username, passwordHash: hashPassword(password), role } });
+    if (role === "patient") {
+      await tx.patientProfile.create({ data: { userId: created.id } });
+    } else if (role === "doctor") {
+      await tx.doctorProfile.create({ data: { userId: created.id } });
+    }
+  });
   return NextResponse.json({ ok: true });
 }
 

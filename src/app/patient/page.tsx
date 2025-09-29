@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import PatientSettings from "./PatientSettings";
 
 export default function PatientDashboard() {
   const { user, loading, logout } = useAuth();
@@ -73,24 +74,7 @@ export default function PatientDashboard() {
           </div>
         );
       case "settings":
-        return (
-          <div className="space-y-4">
-            <div className="border border-white/10 rounded p-4">
-              <h2 className="font-medium mb-2">Settings</h2>
-              <p className="text-sm opacity-80">Manage your profile, security, and preferences.</p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="border border-white/10 rounded p-4">
-                <h3 className="font-medium mb-2">Profile</h3>
-                <p className="text-sm opacity-80">Name, contact, and basic info.</p>
-              </div>
-              <div className="border border-white/10 rounded p-4">
-                <h3 className="font-medium mb-2">Security</h3>
-                <p className="text-sm opacity-80">Password and device settings.</p>
-              </div>
-            </div>
-          </div>
-        );
+        return <PatientSettings username={user.username} />;
       default:
         return null;
     }

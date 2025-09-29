@@ -23,6 +23,24 @@ export async function createUser(
     const data = await res.json().catch(() => ({}));
     return { ok: false, error: data.error || "Failed to create user" };
   }
+  // Create empty profile per role
+  try {
+    if (role === "patient") {
+      await fetch("/api/patient/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+    } else if (role === "doctor") {
+      await fetch("/api/doctor/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+    }
+  } catch {
+    // ignore soft failure
+  }
   return { ok: true };
 }
 

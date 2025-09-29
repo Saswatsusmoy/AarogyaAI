@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import DoctorSettings from "./DoctorSettings";
+import DoctorAppointments from "./DoctorAppointments";
+import DoctorPatients from "./DoctorPatients";
 
 export default function DoctorDashboard() {
   const { user, loading, logout } = useAuth();
@@ -18,8 +20,6 @@ export default function DoctorDashboard() {
     }
   }, [loading, user, router]);
 
-  if (loading || !user || user.role !== "doctor") return null;
-
   const navItems = useMemo(
     () => [
       { key: "appointments" as const, label: "Appointments" },
@@ -29,14 +29,18 @@ export default function DoctorDashboard() {
     ],
     []
   );
+  const isReady = !loading && !!user && user.role === "doctor";
 
   const renderContent = () => {
     switch (active) {
       case "appointments":
         return (
-          <div className="border border-white/10 rounded p-4">
-            <h2 className="font-medium mb-2">Appointments</h2>
-            <p className="text-sm opacity-80">Upcoming and past appointments will appear here.</p>
+          <div className="space-y-4">
+            <div className="border border-white/10 rounded p-4">
+              <h2 className="font-medium mb-2">Appointments</h2>
+              <p className="text-sm opacity-80">Manage your appointments.</p>
+            </div>
+            <DoctorAppointments username={user.username} />
           </div>
         );
       case "patients":
@@ -44,18 +48,9 @@ export default function DoctorDashboard() {
           <div className="space-y-4">
             <div className="border border-white/10 rounded p-4">
               <h2 className="font-medium mb-2">Patients</h2>
-              <p className="text-sm opacity-80">Manage your patient list and records.</p>
+              <p className="text-sm opacity-80">Patients who have booked with you.</p>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="border border-white/10 rounded p-4">
-                <h3 className="font-medium mb-2">Today</h3>
-                <p className="text-sm opacity-80">No visits scheduled.</p>
-              </div>
-              <div className="border border-white/10 rounded p-4">
-                <h3 className="font-medium mb-2">Notes</h3>
-                <p className="text-sm opacity-80">No notes yet.</p>
-              </div>
-            </div>
+            <DoctorPatients username={user.username} />
           </div>
         );
       case "payments":
@@ -105,11 +100,15 @@ export default function DoctorDashboard() {
             <button className="md:hidden rounded border border-white/20 px-3 py-1 text-sm" onClick={() => setSidebarOpen(true)}>Menu</button>
             <h1 className="text-xl font-semibold hidden sm:block">Doctor Dashboard</h1>
           </div>
-          <div className="text-sm opacity-80 truncate">{user.username}</div>
+          <div className="text-sm opacity-80 truncate">{isReady ? user!.username : ""}</div>
         </header>
 
         <main className="p-4 md:p-8 space-y-6">
-          {renderContent()}
+          {!isReady ? (
+            <div className="text-sm opacity-80">Loading...</div>
+          ) : (
+            renderContent()
+          )}
         </main>
       </div>
     </div>

@@ -20,6 +20,7 @@ export async function PUT(req: NextRequest) {
     phone?: string | null;
     allergies?: string | null;
     ailments?: string | null;
+    scribeNotes?: string | null;
   };
   const username = (body.username || "").trim().toLowerCase();
   if (!username) return NextResponse.json({ error: "username required" }, { status: 400 });
@@ -36,6 +37,7 @@ export async function PUT(req: NextRequest) {
       phone: body.phone ?? undefined,
       allergies: body.allergies ?? undefined,
       ailments: body.ailments ?? undefined,
+      scribeNotes: body.scribeNotes ?? undefined,
     },
     create: {
       userId: user.id,
@@ -47,6 +49,7 @@ export async function PUT(req: NextRequest) {
       phone: body.phone ?? null,
       allergies: body.allergies ?? null,
       ailments: body.ailments ?? null,
+      scribeNotes: body.scribeNotes ?? null,
     },
   });
   return NextResponse.json(upserted);

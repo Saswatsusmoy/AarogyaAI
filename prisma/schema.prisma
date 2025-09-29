@@ -18,6 +18,10 @@ model User {
   // Relations
   patientProfile PatientProfile?
   doctorProfile  DoctorProfile?
+
+  // Appointments
+  patientAppointments Appointment[] @relation("PatientAppointments")
+  doctorAppointments  Appointment[] @relation("DoctorAppointments")
 }
 
 enum Role {
@@ -56,4 +60,26 @@ model DoctorProfile {
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model Appointment {
+  id          String         @id @default(cuid())
+  patientId   String
+  doctorId    String
+  patient     User           @relation(name: "PatientAppointments", fields: [patientId], references: [id])
+  doctor      User           @relation(name: "DoctorAppointments", fields: [doctorId], references: [id])
+  scheduledAt DateTime
+  reason      String?
+  status      AppointmentStatus @default(PENDING)
+  notes       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+enum AppointmentStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  COMPLETED
+  CANCELLED
 }

@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import PatientSettings from "./PatientSettings";
+import PatientAppointments from "./PatientAppointments";
+import BookAppointment from "./BookAppointment";
 
 export default function PatientDashboard() {
   const { user, loading, logout } = useAuth();
@@ -18,8 +20,6 @@ export default function PatientDashboard() {
     }
   }, [loading, user, router]);
 
-  if (loading || !user || user.role !== "patient") return null;
-
   const navItems = useMemo(
     () => [
       { key: "home" as const, label: "Home" },
@@ -30,6 +30,7 @@ export default function PatientDashboard() {
     ],
     []
   );
+  const isReady = !loading && !!user && user.role === "patient";
 
   const renderContent = () => {
     switch (active) {
@@ -54,9 +55,12 @@ export default function PatientDashboard() {
         );
       case "appointments":
         return (
-          <div className="border border-white/10 rounded p-4">
-            <h2 className="font-medium mb-2">Appointments</h2>
-            <p className="text-sm opacity-80">Your upcoming appointments will show here.</p>
+          <div className="space-y-4">
+            <div className="border border-white/10 rounded p-4">
+              <h2 className="font-medium mb-2">Appointments</h2>
+              <p className="text-sm opacity-80">Your appointments list.</p>
+            </div>
+            <PatientAppointments username={user.username} />
           </div>
         );
       case "store":
@@ -68,9 +72,12 @@ export default function PatientDashboard() {
         );
       case "book":
         return (
-          <div className="border border-white/10 rounded p-4">
-            <h2 className="font-medium mb-2">Book Appointment</h2>
-            <p className="text-sm opacity-80">Select a date and time to book your appointment.</p>
+          <div className="space-y-4">
+            <div className="border border-white/10 rounded p-4">
+              <h2 className="font-medium mb-2">Book Appointment</h2>
+              <p className="text-sm opacity-80">Select a doctor and schedule a time.</p>
+            </div>
+            <BookAppointment patientUsername={user.username} />
           </div>
         );
       case "settings":
@@ -113,11 +120,15 @@ export default function PatientDashboard() {
             <button className="md:hidden rounded border border-white/20 px-3 py-1 text-sm" onClick={() => setSidebarOpen(true)}>Menu</button>
             <h1 className="text-xl font-semibold hidden sm:block">Patient Dashboard</h1>
           </div>
-          <div className="text-sm opacity-80 truncate">{user.username}</div>
+          <div className="text-sm opacity-80 truncate">{isReady ? user!.username : ""}</div>
         </header>
 
         <main className="p-4 md:p-8 space-y-6">
-          {renderContent()}
+          {!isReady ? (
+            <div className="text-sm opacity-80">Loading...</div>
+          ) : (
+            renderContent()
+          )}
         </main>
       </div>
     </div>

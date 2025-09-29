@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type Appointment = {
   id: string;
@@ -29,11 +30,13 @@ export default function DoctorAppointments({ username }: { username: string }) {
   const [list, setList] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<"list" | "calendar">("calendar");
+  const [view, setView] = useState<"list" | "calendar">("list");
   const [month, setMonth] = useState<Date>(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
+  const [showStartModal, setShowStartModal] = useState(false);
+  const [activeApptId, setActiveApptId] = useState<string | null>(null);
 
   const fetchList = async () => {
     setLoading(true);
@@ -62,6 +65,15 @@ export default function DoctorAppointments({ username }: { username: string }) {
     } catch {
       // ignore
     }
+  };
+
+  const openStartModal = (id: string) => {
+    setActiveApptId(id);
+    setShowStartModal(true);
+  };
+  const closeStartModal = () => {
+    setShowStartModal(false);
+    setActiveApptId(null);
   };
 
   const days = useMemo(() => {
@@ -132,7 +144,7 @@ export default function DoctorAppointments({ username }: { username: string }) {
                 )}
                 {a.status === "ACCEPTED" && (
                   <>
-                    <button className="px-3 py-1 rounded border border-white/20" onClick={() => update(a.id, "COMPLETED")}>Complete</button>
+                    <Link href={`/doctor/patient/${encodeURIComponent(a.patient.username)}?appointmentId=${encodeURIComponent(a.id)}`} className="px-3 py-1 rounded border border-white/20">Start</Link>
                     <button className="px-3 py-1 rounded border border-white/20" onClick={() => update(a.id, "CANCELLED")}>Cancel</button>
                   </>
                 )}
@@ -157,9 +169,13 @@ export default function DoctorAppointments({ username }: { username: string }) {
               const isCurrentMonth = d.getMonth() === month.getMonth();
               const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
               const dayAppts = apptsByDay.get(k) || [];
+              const isToday = sameDay(d, new Date());
               return (
-                <div key={`${d.toISOString()}-${idx}`} className={`min-h-[90px] border border-white/10 rounded p-2 ${isCurrentMonth ? "" : "opacity-40"}`}>
-                  <div className="text-xs font-medium mb-1">{d.getDate()}</div>
+                <div key={`${d.toISOString()}-${idx}`} className={`min-h-[90px] border rounded p-2 ${isCurrentMonth ? "border-white/10" : "border-white/10 opacity-40"} ${isToday ? "ring-1 ring-foreground/60" : ""}`}>
+                  <div className="text-xs font-medium mb-1 flex items-center justify-between">
+                    <span>{d.getDate()}</span>
+                    {isToday && <span className="inline-block w-2 h-2 rounded-full bg-foreground" aria-label="Today"></span>}
+                  </div>
                   <div className="space-y-1">
                     {dayAppts.slice(0,3).map(a => (
                       <div key={a.id} className="text-[11px] px-2 py-1 rounded border border-white/20 truncate">

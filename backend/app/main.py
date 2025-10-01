@@ -1,0 +1,112 @@
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+import uuid
+
+from .config import validate_settings, settings
+from .stt_manager import stt_manager
+from .ai_notes import generate_notes_and_prescription
+
+
+class StartResponse(BaseModel):
+    session_id: str
+
+
+class StopRequest(BaseModel):
+    session_id: str
+
+
+class StopResponse(BaseModel):
+    ok: bool
+
+
+app = FastAPI(title="AarogyaAI STT Service", version="0.1.0")
+
+# Allow frontend origin to call the backend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Consider restricting in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.post("/stt/session/start", response_model=StartResponse)
+async def start_session() -> StartResponse:
+    # If Cartesia is not configured, return a dummy session id so UI can proceed
+    if not settings.cartesia_api_key:
+        return StartResponse(session_id=str(uuid.uuid4()))
+    try:
+        validate_settings()
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    session_id = await stt_manager.start_session()
+    return StartResponse(session_id=session_id)
+
+
+@app.post("/stt/session/stop", response_model=StopResponse)
+async def stop_session(payload: StopRequest) -> StopResponse:
+    # If there was no real session (e.g., dummy id), just return ok
+    if not settings.cartesia_api_key:
+        return StopResponse(ok=True)
+    ok = await stt_manager.stop_session(payload.session_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return StopResponse(ok=True)
+
+
+class TranscriptPayload(BaseModel):
+    transcript: str
+
+
+class NotesResponse(BaseModel):
+    notes: str
+    prescription: dict
+
+
+@app.post("/ai/notes", response_model=NotesResponse)
+async def generate_ai_notes(payload: TranscriptPayload) -> NotesResponse:
+    try:
+        # Validate Cerebras env too; if not present, return 500
+        validate_settings()
+    except RuntimeError as e:
+        # Still allow when only CARTESIA missing for STT by checking directly
+        if "CARTESIA_API_KEY" in str(e) and settings.cerebras_api_key:
+            pass
+        else:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    if not payload.transcript or not payload.transcript.strip():
+        raise HTTPException(status_code=400, detail="Transcript is required")
+
+    try:
+        notes, prescription = await generate_notes_and_prescription(payload.transcript.strip())
+        return NotesResponse(notes=notes, prescription=prescription)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AI generation failed: {e}")
+
+
+class StopAndProcessRequest(BaseModel):
+    session_id: str
+    transcript: str
+
+
+@app.post("/stt/session/stop_and_process", response_model=NotesResponse)
+async def stop_and_process(payload: StopAndProcessRequest) -> NotesResponse:
+    # Stop STT session if it exists (best-effort)
+    try:
+        await stt_manager.stop_session(payload.session_id)
+    except Exception:
+        pass
+
+    if not payload.transcript or not payload.transcript.strip():
+        raise HTTPException(status_code=400, detail="Transcript is required")
+
+    try:
+        notes, prescription = await generate_notes_and_prescription(payload.transcript.strip())
+        return NotesResponse(notes=notes, prescription=prescription)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AI generation failed: {e}")

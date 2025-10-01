@@ -1,0 +1,100 @@
+---
+alwaysApply: true
+---
+
+# AarogyaAI Development Rules
+
+## Core Principles
+
+### File Creation Policy
+- **STRICT**: Do NOT create unnecessary test files, temporary files, or extra files unless explicitly requested
+- **FIX IN PLACE**: When something isn't working, fix it directly in the existing codebase
+- **NO WORKAROUNDS**: Avoid creating separate files for debugging, logging, or temporary solutions
+- **HOOK OR BY CROOK**: Solve problems by modifying existing code, not by creating new files
+
+### Development Approach
+1. **Direct Fixes**: Always attempt to fix issues within the existing file structure
+2. **Inline Solutions**: Implement solutions directly where the problem exists
+3. **Modify Existing**: Edit existing files rather than creating new ones
+4. **Consolidate**: Merge functionality into existing files when possible
+
+### What NOT to Create
+- Test files unless specifically requested
+- Temporary debug files
+- Backup copies
+- Separate utility files for simple functions
+- Additional configuration files for basic settings
+- Log files or debug output files
+- Separate documentation files unless requested
+
+### What TO Do Instead
+- Fix bugs directly in the source code
+- Add functionality to existing files
+- Modify existing functions to handle edge cases
+- Use inline comments for debugging
+- Implement error handling within existing code
+- Add logging directly to existing functions
+
+### Exception Cases
+Only create new files when:
+1. Explicitly requested by the user
+2. Absolutely necessary for architectural reasons
+3. Required by the framework/library being used
+4. Part of the core project structure (e.g., main entry points)
+
+### Code Quality
+- Maintain clean, readable code
+- Use meaningful variable and function names
+- Add comments for complex logic
+- Handle errors gracefully within existing code
+- Optimize performance within existing structure
+
+Remember: **Fix it in place, don't create files to work around problems.**
+# AarogyaAI Development Rules
+
+## Core Principles
+
+### File Creation Policy
+- **STRICT**: Do NOT create unnecessary test files, temporary files, or extra files unless explicitly requested
+- **FIX IN PLACE**: When something isn't working, fix it directly in the existing codebase
+- **NO WORKAROUNDS**: Avoid creating separate files for debugging, logging, or temporary solutions
+- **HOOK OR BY CROOK**: Solve problems by modifying existing code, not by creating new files
+
+### Development Approach
+1. **Direct Fixes**: Always attempt to fix issues within the existing file structure
+2. **Inline Solutions**: Implement solutions directly where the problem exists
+3. **Modify Existing**: Edit existing files rather than creating new ones
+4. **Consolidate**: Merge functionality into existing files when possible
+
+### What NOT to Create
+- Test files unless specifically requested
+- Temporary debug files
+- Backup copies
+- Separate utility files for simple functions
+- Additional configuration files for basic settings
+- Log files or debug output files
+- Separate documentation files unless requested
+
+### What TO Do Instead
+- Fix bugs directly in the source code
+- Add functionality to existing files
+- Modify existing functions to handle edge cases
+- Use inline comments for debugging
+- Implement error handling within existing code
+- Add logging directly to existing functions
+
+### Exception Cases
+Only create new files when:
+1. Explicitly requested by the user
+2. Absolutely necessary for architectural reasons
+3. Required by the framework/library being used
+4. Part of the core project structure (e.g., main entry points)
+
+### Code Quality
+- Maintain clean, readable code
+- Use meaningful variable and function names
+- Add comments for complex logic
+- Handle errors gracefully within existing code
+- Optimize performance within existing structure
+
+Remember: **Fix it in place, don't create files to work around problems.**

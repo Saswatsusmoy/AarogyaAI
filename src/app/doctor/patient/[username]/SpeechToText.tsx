@@ -1,15 +1,12 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
-export default function SpeechToText({ onFinal }:{ onFinal: (text: string) => void }) {
+export default function SpeechToText({ onStart, onFinal, onPartial, onStop }:{ onStart?: () => void; onFinal: (text: string) => void; onPartial?: (text: string) => void; onStop?: () => void }) {
   const [listening, setListening] = useState(false);
   const [recognizer, setRecognizer] = useState<SpeechRecognition | null>(null as any);
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const searchParams = useSearchParams();
-  const appointmentId = searchParams.get("appointmentId");
 
   const BACKEND_BASE = process.env.NEXT_PUBLIC_STT_BACKEND_URL || "http://localhost:8080";
 
@@ -31,6 +28,7 @@ export default function SpeechToText({ onFinal }:{ onFinal: (text: string) => vo
         if (!res.ok) throw new Error("failed to start stt session");
         const data = await res.json();
         setSessionId(data.session_id);
+        if (onStart) onStart();
       } catch {
         setError("Failed to start backend STT session");
       }
@@ -40,21 +38,18 @@ export default function SpeechToText({ onFinal }:{ onFinal: (text: string) => vo
       rec.interimResults = true;
       rec.lang = "en-US";
       rec.onresult = (e: any) => {
-        let final = "";
+        let finalChunk = "";
+        let partialChunk = "";
         for (let i = e.resultIndex; i < e.results.length; i++) {
           const transcript = e.results[i][0].transcript;
-          if (e.results[i].isFinal) final += transcript + " ";
+          if (e.results[i].isFinal) finalChunk += transcript + " ";
+          else partialChunk += transcript;
         }
-        if (final) {
-          const text = final.trim();
+        if (partialChunk && onPartial) onPartial(partialChunk);
+        if (finalChunk) {
+          const text = finalChunk.trim();
+          if (onPartial) onPartial("");
           onFinal(text);
-          if (appointmentId) {
-            fetch("/api/patient/transcriptions", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ appointmentId, text }),
-            }).catch(() => {});
-          }
         }
       };
       rec.onerror = () => setError("Speech recognition error");
@@ -72,6 +67,8 @@ export default function SpeechToText({ onFinal }:{ onFinal: (text: string) => vo
         }).catch(() => {});
         setSessionId(null);
       }
+      if (onPartial) onPartial("");
+      if (onStop) onStop();
     }
   };
 
@@ -92,7 +89,7 @@ export default function SpeechToText({ onFinal }:{ onFinal: (text: string) => vo
         <div className="text-sm opacity-80">Live transcription requires a browser with the Speech API (try Chrome or Edge).</div>
       )}
       {error && <div className="text-sm text-red-500">{error}</div>}
-      <div className="text-xs opacity-70">Speaks will be transcribed and appended to the notes.</div>
+      <div className="text-xs opacity-70">Speaks will be transcribed and shown below in real-time.</div>
     </div>
   );
 }

@@ -282,10 +282,7 @@ export default function DoctorPatientProfile() {
         }}
       />
       <Transcripts items={transcripts} partial={partial} />
-      <AINotes transcripts={transcripts} onGenerated={(aiNotes) => {
-        // Optionally mirror AI notes into scribe notes area for quick overwrite
-        setNotes(aiNotes);
-      }} />
+      <AINotes transcripts={transcripts} />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import DoctorScribe from "./DoctorScribe";
 import SpeechToText from "./SpeechToText";
 import Transcripts from "./Transcripts";
+import AINotes from "./AINotes";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
@@ -281,6 +282,10 @@ export default function DoctorPatientProfile() {
         }}
       />
       <Transcripts items={transcripts} partial={partial} />
+      <AINotes transcripts={transcripts} onGenerated={(aiNotes) => {
+        // Optionally mirror AI notes into scribe notes area for quick overwrite
+        setNotes(aiNotes);
+      }} />
     </div>
   );
 }

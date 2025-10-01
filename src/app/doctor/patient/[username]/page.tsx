@@ -3,7 +3,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import DoctorScribe from "./DoctorScribe";
 import SpeechToText from "./SpeechToText";
-import { useParams, useRouter } from "next/navigation";
+import Transcripts from "./Transcripts";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 type Profile = {
@@ -30,6 +31,8 @@ export default function DoctorPatientProfile() {
     }
   })();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const appointmentId = searchParams.get("appointmentId");
   const { user, loading } = useAuth();
 
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -47,6 +50,8 @@ export default function DoctorPatientProfile() {
   const [allergies, setAllergies] = useState<string>("");
   const [ailments, setAilments] = useState<string>("");
   const [editMode, setEditMode] = useState(false);
+
+  const [transcripts, setTranscripts] = useState<{ text: string; createdAt?: string }[]>([]);
 
   const currentWeight = editMode ? weight : (typeof profile?.weight === "number" ? profile!.weight : null);
   const currentHeight = editMode ? height : (typeof profile?.height === "number" ? profile!.height : null);
@@ -104,6 +109,20 @@ export default function DoctorPatientProfile() {
     }
     load();
   }, [username]);
+
+  useEffect(() => {
+    async function loadTranscripts() {
+      if (!appointmentId) return;
+      try {
+        const res = await fetch(`/api/patient/transcriptions?appointmentId=${encodeURIComponent(appointmentId)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setTranscripts(data || []);
+        }
+      } catch {}
+    }
+    loadTranscripts();
+  }, [appointmentId]);
 
   const saveNotes = async () => {
     setSaving(true);
@@ -263,7 +282,8 @@ export default function DoctorPatientProfile() {
         <DoctorScribe notes={notes} setNotes={setNotes} onSave={saveNotes} saving={saving} error={error} />
       </div>
 
-      <SpeechToText onAppend={(text) => setNotes(n => (n ? n + "\n" : "") + text)} />
+      <SpeechToText onFinal={(text) => setTranscripts((prev) => [...prev, { text }])} />
+      <Transcripts items={transcripts} />
     </div>
   );
 }

@@ -52,6 +52,9 @@ export default function DoctorPatientProfile() {
   const [editMode, setEditMode] = useState(false);
 
   const [transcripts, setTranscripts] = useState<{ text: string; createdAt?: string }[]>([]);
+  const [partial, setPartial] = useState<string>("");
+
+  const [sessionBuffer, setSessionBuffer] = useState<string>("");
 
   const currentWeight = editMode ? weight : (typeof profile?.weight === "number" ? profile!.weight : null);
   const currentHeight = editMode ? height : (typeof profile?.height === "number" ? profile!.height : null);
@@ -168,35 +171,16 @@ export default function DoctorPatientProfile() {
     }
   };
 
-  const toggleMic = () => {
-    // Browser SpeechRecognition (experimental)
-    const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-      setError("Speech recognition not supported in this browser");
-      return;
-    }
-    if (!listening) {
-      const rec: SpeechRecognition = new SR();
-      rec.continuous = true;
-      rec.interimResults = true;
-      rec.lang = "en-US";
-      rec.onresult = (e: any) => {
-        let final = "";
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          const transcript = e.results[i][0].transcript;
-          if (e.results[i].isFinal) final += transcript + " ";
-        }
-        if (final) setNotes(n => (n ? n + "\n" : "") + final.trim());
-      };
-      rec.onerror = () => setError("Speech recognition error");
-      rec.start();
-      setRecognizer(rec);
-      setListening(true);
-    } else {
-      recognizer?.stop();
-      setListening(false);
-    }
-  };
+  async function persistSessionTranscript(text: string) {
+    if (!appointmentId || !text.trim()) return;
+    try {
+      await fetch("/api/patient/transcriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ appointmentId, text }),
+      });
+    } catch {}
+  }
 
   if (!profile) return <div className="p-4 text-sm opacity-80">Loading...</div>;
 
@@ -282,8 +266,21 @@ export default function DoctorPatientProfile() {
         <DoctorScribe notes={notes} setNotes={setNotes} onSave={saveNotes} saving={saving} error={error} />
       </div>
 
-      <SpeechToText onFinal={(text) => setTranscripts((prev) => [...prev, { text }])} />
-      <Transcripts items={transcripts} />
+      <SpeechToText
+        onStart={() => { setSessionBuffer(""); setPartial(""); }}
+        onFinal={(text) => setSessionBuffer((prev) => (prev ? prev + " " : "") + text)}
+        onPartial={(txt) => setPartial(txt)}
+        onStop={async () => {
+          const combined = sessionBuffer.trim();
+          if (combined) {
+            await persistSessionTranscript(combined);
+            setTranscripts((prev) => [...prev, { text: combined }]);
+          }
+          setSessionBuffer("");
+          setPartial("");
+        }}
+      />
+      <Transcripts items={transcripts} partial={partial} />
     </div>
   );
 }

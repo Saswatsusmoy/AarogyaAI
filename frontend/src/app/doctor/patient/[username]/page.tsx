@@ -5,6 +5,7 @@ import DoctorScribe from "./DoctorScribe";
 import SpeechToText from "./SpeechToText";
 import Transcripts from "./Transcripts";
 import AINotes from "./AINotes";
+import Prescription from "./Prescription";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
@@ -314,6 +315,7 @@ export default function DoctorPatientProfile() {
       />
       <Transcripts items={transcripts} partial={partial} />
       <AINotes transcripts={transcripts} appointmentId={appointmentId} />
+      <Prescription patient={profile} patientUsername={username} doctorName={user?.username} />
     </div>
   );
 }

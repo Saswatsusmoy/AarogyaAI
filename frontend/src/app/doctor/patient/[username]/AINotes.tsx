@@ -101,7 +101,16 @@ export default function AINotes({
             const msg = `Save failed (${putRes.status})`;
             setError(msg);
           } else {
-            setSavedMsg("AI Notes saved to appointment");
+            try {
+              const updated = await putRes.json();
+              if (!updated?.aiNotes) {
+                setError("Saved but aiNotes missing in response (check DB migration)");
+              } else {
+                setSavedMsg("AI Notes saved to appointment");
+              }
+            } catch {
+              setSavedMsg("AI Notes saved to appointment");
+            }
             setTimeout(() => setSavedMsg(""), 2000);
           }
         } catch {}
@@ -112,6 +121,21 @@ export default function AINotes({
       setLoading(false);
     }
   };
+
+  // Load existing AI notes for this appointment (if any)
+  React.useEffect(() => {
+    async function loadExisting() {
+      if (!appointmentId) return;
+      try {
+        const res = await fetch(`/api/appointments?id=${encodeURIComponent(appointmentId)}`);
+        if (res.ok) {
+          const appt = await res.json();
+          if (typeof appt?.aiNotes === "string") setNotes(appt.aiNotes);
+        }
+      } catch {}
+    }
+    loadExisting();
+  }, [appointmentId]);
 
   return (
     <div className="border border-white/10 rounded p-4 space-y-3">

@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
+  const id = req.nextUrl.searchParams.get("id");
+  if (id) {
+    const appt = await prisma.appointment.findUnique({
+      where: { id },
+      include: { patient: { select: { username: true } }, doctor: { select: { username: true } } },
+    });
+    if (!appt) return NextResponse.json({ error: "appointment not found" }, { status: 404 });
+    return NextResponse.json(appt);
+  }
+
   const username = req.nextUrl.searchParams.get("username");
   const role = req.nextUrl.searchParams.get("role");
   if (!username || (role !== "doctor" && role !== "patient")) {

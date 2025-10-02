@@ -40,6 +40,7 @@ export default function DoctorPatientProfile() {
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [completing, setCompleting] = useState(false);
   const [listening, setListening] = useState(false);
   const [recognizer, setRecognizer] = useState<SpeechRecognition | null>(null as any);
   // Editable (except name): keep local state mirrors
@@ -172,6 +173,25 @@ export default function DoctorPatientProfile() {
     }
   };
 
+  const completeAppointment = async () => {
+    if (!appointmentId) return;
+    setCompleting(true);
+    setError(null);
+    try {
+      // Save current scribe notes into this appointment and mark completed
+      const res = await fetch("/api/appointments", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: appointmentId, status: "COMPLETED", notes }),
+      });
+      if (!res.ok) throw new Error("complete failed");
+    } catch {
+      setError("Failed to complete appointment");
+    } finally {
+      setCompleting(false);
+    }
+  };
+
   async function persistSessionTranscript(text: string) {
     if (!appointmentId || !text.trim()) return;
     try {
@@ -267,6 +287,17 @@ export default function DoctorPatientProfile() {
         <DoctorScribe notes={notes} setNotes={setNotes} onSave={saveNotes} saving={saving} error={error} />
       </div>
 
+      <div className="flex items-center justify-end">
+        <button
+          className="px-4 py-2 rounded bg-green-600 text-white disabled:opacity-60"
+          disabled={!appointmentId || completing}
+          title={!appointmentId ? "Open with an appointment to enable completion" : undefined}
+          onClick={completeAppointment}
+        >
+          {completing ? "Completing..." : "Complete Appointment"}
+        </button>
+      </div>
+
       <SpeechToText
         onStart={() => { setSessionBuffer(""); setPartial(""); }}
         onFinal={(text) => setSessionBuffer((prev) => (prev ? prev + " " : "") + text)}
@@ -282,7 +313,7 @@ export default function DoctorPatientProfile() {
         }}
       />
       <Transcripts items={transcripts} partial={partial} />
-      <AINotes transcripts={transcripts} />
+      <AINotes transcripts={transcripts} appointmentId={appointmentId} />
     </div>
   );
 }

@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
+  const id = req.nextUrl.searchParams.get("id");
+  if (id) {
+    const appt = await prisma.appointment.findUnique({
+      where: { id },
+      include: { patient: { select: { username: true } }, doctor: { select: { username: true } } },
+    });
+    if (!appt) return NextResponse.json({ error: "appointment not found" }, { status: 404 });
+    return NextResponse.json(appt);
+  }
+
   const username = req.nextUrl.searchParams.get("username");
   const role = req.nextUrl.searchParams.get("role");
   if (!username || (role !== "doctor" && role !== "patient")) {
@@ -54,11 +64,13 @@ export async function PUT(req: NextRequest) {
     status?: "PENDING" | "ACCEPTED" | "DECLINED" | "COMPLETED" | "CANCELLED";
     scheduledAt?: string | null;
     notes?: string | null;
+    aiNotes?: string | null;
   };
   if (!body.id) return NextResponse.json({ error: "id required" }, { status: 400 });
   const data: any = {};
   if (body.status) data.status = body.status;
   if (typeof body.notes !== "undefined") data.notes = body.notes;
+  if (typeof body.aiNotes !== "undefined") data.aiNotes = body.aiNotes;
   if (typeof body.scheduledAt !== "undefined") {
     data.scheduledAt = body.scheduledAt ? new Date(body.scheduledAt) : undefined;
   }

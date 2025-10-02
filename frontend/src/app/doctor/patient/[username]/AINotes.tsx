@@ -58,12 +58,15 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
 
 export default function AINotes({
   transcripts,
+  appointmentId,
 }: {
   transcripts: { text: string }[];
+  appointmentId?: string | null;
 }) {
   const [notes, setNotes] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savedMsg, setSavedMsg] = useState<string>("");
   const [viewMode, setViewMode] = useState<"formatted" | "raw">("formatted");
 
   const transcriptBlob = useMemo(() => {
@@ -74,6 +77,7 @@ export default function AINotes({
 
   const generate = async () => {
     setError(null);
+    setSavedMsg("");
     setLoading(true);
     try {
       const res = await fetch(`${BACKEND_BASE}/ai/notes`, {
@@ -84,12 +88,54 @@ export default function AINotes({
       if (!res.ok) throw new Error("AI notes generation failed");
       const data = await res.json();
       setNotes(data.notes || "");
+
+      // Persist AI notes to appointment if available
+      if (appointmentId) {
+        try {
+          const putRes = await fetch("/api/appointments", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: appointmentId, aiNotes: data.notes || null }),
+          });
+          if (!putRes.ok) {
+            const msg = `Save failed (${putRes.status})`;
+            setError(msg);
+          } else {
+            try {
+              const updated = await putRes.json();
+              if (!updated?.aiNotes) {
+                setError("Saved but aiNotes missing in response (check DB migration)");
+              } else {
+                setSavedMsg("AI Notes saved to appointment");
+              }
+            } catch {
+              setSavedMsg("AI Notes saved to appointment");
+            }
+            setTimeout(() => setSavedMsg(""), 2000);
+          }
+        } catch {}
+      }
     } catch (e) {
       setError("Failed to generate AI notes");
     } finally {
       setLoading(false);
     }
   };
+
+  // Load existing AI notes for this appointment (if any)
+  React.useEffect(() => {
+    async function loadExisting() {
+      if (!appointmentId) return;
+      try {
+        const res = await fetch(`/api/appointments?id=${encodeURIComponent(appointmentId)}`);
+        if (res.ok) {
+          const appt = await res.json();
+          if (typeof appt?.aiNotes === "string") setNotes(appt.aiNotes);
+        }
+      } catch {}
+    }
+    loadExisting();
+  }, [appointmentId]);
 
   return (
     <div className="border border-white/10 rounded p-4 space-y-3">
@@ -153,6 +199,7 @@ export default function AINotes({
       )}
       
       {error && <div className="text-sm text-red-500">{error}</div>}
+      {!error && savedMsg && <div className="text-sm text-green-500">{savedMsg}</div>}
     </div>
   );
 }

@@ -73,6 +73,7 @@ model Appointment {
   reason      String?
   status      AppointmentStatus @default(PENDING)
   notes       String?
+  aiNotes     String?        @map("AI-Notes")
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 

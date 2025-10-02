@@ -54,11 +54,13 @@ export async function PUT(req: NextRequest) {
     status?: "PENDING" | "ACCEPTED" | "DECLINED" | "COMPLETED" | "CANCELLED";
     scheduledAt?: string | null;
     notes?: string | null;
+    aiNotes?: string | null;
   };
   if (!body.id) return NextResponse.json({ error: "id required" }, { status: 400 });
   const data: any = {};
   if (body.status) data.status = body.status;
   if (typeof body.notes !== "undefined") data.notes = body.notes;
+  if (typeof body.aiNotes !== "undefined") data.aiNotes = body.aiNotes;
   if (typeof body.scheduledAt !== "undefined") {
     data.scheduledAt = body.scheduledAt ? new Date(body.scheduledAt) : undefined;
   }

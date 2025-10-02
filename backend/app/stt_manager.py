@@ -39,7 +39,8 @@ class STTSessionWrapper:
         if self.session is None:
             return
         try:
-            await self.session.close()
+            # AgentSession uses aclose() for async closing
+            await self.session.aclose()
         finally:
             self.session = None
             if self._task is not None:

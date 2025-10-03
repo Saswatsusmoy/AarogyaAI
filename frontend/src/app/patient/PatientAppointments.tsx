@@ -10,7 +10,7 @@ type Appointment = {
   doctor: { username: string };
 };
 
-export default function PatientAppointments({ username }: { username: string }) {
+export default function PatientAppointments({ username, onRefresh, onAppointmentClick }: { username: string; onRefresh?: () => void; onAppointmentClick?: (appointmentId: string) => void }) {
   const [list, setList] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +22,8 @@ export default function PatientAppointments({ username }: { username: string }) 
       const res = await fetch(`/api/appointments?username=${encodeURIComponent(username)}&role=patient`);
       const data = await res.json();
       setList(data || []);
+      // Notify parent component to refresh its data too
+      if (onRefresh) onRefresh();
     } catch {
       setError("Failed to load");
     } finally {
@@ -38,7 +40,11 @@ export default function PatientAppointments({ username }: { username: string }) 
       {error && <div className="text-sm text-red-500">{error}</div>}
       {list.length === 0 && <div className="text-sm opacity-80">No appointments.</div>}
       {list.map(a => (
-        <div key={a.id} className="border border-white/10 rounded p-3 flex items-center justify-between">
+        <div 
+          key={a.id} 
+          className="border border-white/10 rounded p-3 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
+          onClick={() => onAppointmentClick?.(a.id)}
+        >
           <div>
             <div className="font-medium">With Dr. {a.doctor.username}</div>
             <div className="text-sm opacity-80">{new Date(a.scheduledAt).toLocaleString()} {a.reason ? `• ${a.reason}` : ""}</div>

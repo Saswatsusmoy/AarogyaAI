@@ -25,10 +25,12 @@ export default function Prescription({
   patient,
   patientUsername,
   doctorName,
+  appointmentId,
 }: {
   patient: PatientProfile | null;
   patientUsername: string;
   doctorName?: string | null;
+  appointmentId?: string | null;
 }) {
   const [clinicName, setClinicName] = React.useState<string>("AarogyaAI Clinic");
   const [clinicAddress, setClinicAddress] = React.useState<string>("123 Health Street, City");
@@ -39,6 +41,98 @@ export default function Prescription({
   const [advice, setAdvice] = React.useState<string>("");
   const [followUp, setFollowUp] = React.useState<string>("");
   const [signature, setSignature] = React.useState<string>(doctorName || "");
+  const [saving, setSaving] = React.useState<boolean>(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [savedMsg, setSavedMsg] = React.useState<string>("");
+
+  // Load doctor signature, clinic details and existing prescription data
+  React.useEffect(() => {
+    async function loadData() {
+      // Load doctor profile data (signature and clinic details)
+      if (doctorName) {
+        try {
+          const res = await fetch(`/api/doctor/profile?username=${encodeURIComponent(doctorName)}`);
+          if (res.ok) {
+            const profile = await res.json();
+            if (profile?.signature) {
+              setSignature(profile.signature);
+            }
+            // Load clinic details from doctor profile
+            if (profile?.clinicName) {
+              setClinicName(profile.clinicName);
+            }
+            if (profile?.clinicAddress) {
+              setClinicAddress(profile.clinicAddress);
+            }
+            if (profile?.clinicPhone) {
+              setClinicPhone(profile.clinicPhone);
+            }
+          }
+        } catch {}
+      }
+
+      // Load existing prescription data
+      if (!appointmentId) return;
+      try {
+        const res = await fetch(`/api/appointments?id=${encodeURIComponent(appointmentId)}`);
+        if (res.ok) {
+          const appt = await res.json();
+          if (appt?.prescription) {
+            const data = JSON.parse(appt.prescription);
+            setClinicName(data.clinicName || "AarogyaAI Clinic");
+            setClinicAddress(data.clinicAddress || "123 Health Street, City");
+            setClinicPhone(data.clinicPhone || "+91-00000-00000");
+            setDiagnosis(data.diagnosis || "");
+            setMedications(data.medications || []);
+            setAdvice(data.advice || "");
+            setFollowUp(data.followUp || "");
+            // Don't override signature if we already loaded it from doctor profile
+            if (!profile?.signature) {
+              setSignature(data.signature || doctorName || "");
+            }
+          }
+        }
+      } catch {}
+    }
+    loadData();
+  }, [appointmentId, doctorName]);
+
+  const savePrescription = async () => {
+    if (!appointmentId) return;
+    setSaving(true);
+    setError(null);
+    setSavedMsg("");
+    
+    try {
+      const prescriptionData = {
+        clinicName,
+        clinicAddress,
+        clinicPhone,
+        diagnosis,
+        medications,
+        advice,
+        followUp,
+        signature,
+      };
+      
+      const res = await fetch("/api/appointments", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          id: appointmentId, 
+          prescription: JSON.stringify(prescriptionData) 
+        }),
+      });
+      
+      if (!res.ok) throw new Error("Failed to save prescription");
+      setSavedMsg("Prescription saved successfully");
+      setTimeout(() => setSavedMsg(""), 3000);
+    } catch (e) {
+      setError("Failed to save prescription");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const addMedication = () => {
     setMedications((prev) => [
@@ -61,7 +155,7 @@ export default function Prescription({
     );
   };
 
-  const printAsPDF = () => {
+  const printAsPDF = async () => {
     const win = window.open("", "_blank");
     if (!win) return;
 
@@ -164,7 +258,10 @@ export default function Prescription({
           <div class="footer">
             <div class="muted">Generated via AarogyaAI</div>
             <div class="sign">
-              <div>${signature || ""}</div>
+              ${signature && signature.startsWith('data:image') 
+                ? `<img src="${signature}" alt="Doctor Signature" style="max-height: 40px; max-width: 200px;" />`
+                : `<div>${signature || ""}</div>`
+              }
               <div class="muted">Signature</div>
             </div>
           </div>
@@ -176,80 +273,126 @@ export default function Prescription({
     win.document.open();
     win.document.write(html);
     win.document.close();
+
+    // Save PDF to database if appointmentId is available
+    if (appointmentId) {
+      try {
+        // Convert HTML to base64 for storage (simplified approach)
+        const pdfContent = btoa(html);
+        await fetch("/api/appointments", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            id: appointmentId, 
+            prescriptionPdf: pdfContent 
+          }),
+        });
+      } catch (e) {
+        console.error("Failed to save PDF to database:", e);
+      }
+    }
   };
 
   return (
     <div className="border border-white/10 rounded p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-medium">Prescription</h2>
-        <button
-          className="px-3 py-1 rounded bg-foreground text-background disabled:opacity-60 text-sm"
-          onClick={printAsPDF}
-          title="Download/Print as PDF"
-        >
-          Download PDF
-        </button>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-3">
-        <div>
-          <label className="block text-sm mb-1">Clinic Name</label>
-          <input
-            className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
-            value={clinicName}
-            onChange={(e) => setClinicName(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Clinic Address</label>
-          <input
-            className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
-            value={clinicAddress}
-            onChange={(e) => setClinicAddress(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Clinic Phone</label>
-          <input
-            className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
-            value={clinicPhone}
-            onChange={(e) => setClinicPhone(e.target.value)}
-          />
+        <div className="flex items-center gap-2">
+          {appointmentId && (
+            <button
+              className="px-3 py-1 rounded bg-blue-600 text-white disabled:opacity-60 text-sm"
+              onClick={savePrescription}
+              disabled={saving}
+              title="Save prescription to database"
+            >
+              {saving ? "Saving..." : "Save"}
+            </button>
+          )}
+          <button
+            className="px-3 py-1 rounded bg-foreground text-background disabled:opacity-60 text-sm"
+            onClick={printAsPDF}
+            title="Download/Print as PDF"
+          >
+            Download PDF
+          </button>
         </div>
       </div>
+      
+      {error && <div className="text-sm text-red-500">{error}</div>}
+      {!error && savedMsg && <div className="text-sm text-green-500">{savedMsg}</div>}
 
-      <div className="grid md:grid-cols-4 gap-3">
-        <div>
-          <label className="block text-sm mb-1">Patient Name</label>
-          <input
-            className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
-            value={patient?.name || patientUsername}
-            readOnly
-          />
+      <div className="space-y-3">
+        <div className="text-sm font-medium text-gray-300">Clinic Details (Read-only)</div>
+        <div className="grid md:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-sm mb-1">Clinic Name</label>
+            <input
+              className="w-full px-3 py-2 rounded border border-white/20 bg-gray-800/50 outline-none cursor-not-allowed opacity-70"
+              value={clinicName}
+              readOnly
+              disabled
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Clinic Address</label>
+            <input
+              className="w-full px-3 py-2 rounded border border-white/20 bg-gray-800/50 outline-none cursor-not-allowed opacity-70"
+              value={clinicAddress}
+              readOnly
+              disabled
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Clinic Phone</label>
+            <input
+              className="w-full px-3 py-2 rounded border border-white/20 bg-gray-800/50 outline-none cursor-not-allowed opacity-70"
+              value={clinicPhone}
+              readOnly
+              disabled
+            />
+          </div>
         </div>
-        <div>
-          <label className="block text-sm mb-1">Age</label>
-          <input
-            className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
-            value={patient?.age ?? ""}
-            readOnly
-          />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Gender</label>
-          <input
-            className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
-            value={patient?.gender || ""}
-            readOnly
-          />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Phone</label>
-          <input
-            className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
-            value={patient?.phone || ""}
-            readOnly
-          />
+      </div>
+
+      <div className="space-y-3">
+        <div className="text-sm font-medium text-gray-300">Patient Details (Read-only)</div>
+        <div className="grid md:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-sm mb-1">Patient Name</label>
+            <input
+              className="w-full px-3 py-2 rounded border border-white/20 bg-gray-800/50 outline-none cursor-not-allowed opacity-70"
+              value={patient?.name || patientUsername}
+              readOnly
+              disabled
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Age</label>
+            <input
+              className="w-full px-3 py-2 rounded border border-white/20 bg-gray-800/50 outline-none cursor-not-allowed opacity-70"
+              value={patient?.age ?? ""}
+              readOnly
+              disabled
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Gender</label>
+            <input
+              className="w-full px-3 py-2 rounded border border-white/20 bg-gray-800/50 outline-none cursor-not-allowed opacity-70"
+              value={patient?.gender || ""}
+              readOnly
+              disabled
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Phone</label>
+            <input
+              className="w-full px-3 py-2 rounded border border-white/20 bg-gray-800/50 outline-none cursor-not-allowed opacity-70"
+              value={patient?.phone || ""}
+              readOnly
+              disabled
+            />
+          </div>
         </div>
       </div>
 
@@ -341,15 +484,19 @@ export default function Prescription({
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm mb-1">Doctor Signature</label>
-          <input
-            className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
-            value={signature}
-            onChange={(e) => setSignature(e.target.value)}
-            placeholder="Dr. John Doe, MBBS"
-          />
+      <div className="space-y-3">
+        <div className="text-sm font-medium text-gray-300">Doctor Signature (Read-only)</div>
+        <div className="grid md:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm mb-1">Doctor Signature</label>
+            <input
+              className="w-full px-3 py-2 rounded border border-white/20 bg-gray-800/50 outline-none cursor-not-allowed opacity-70"
+              value={signature}
+              readOnly
+              disabled
+              placeholder="Dr. John Doe, MBBS"
+            />
+          </div>
         </div>
       </div>
     </div>

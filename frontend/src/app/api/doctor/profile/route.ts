@@ -17,6 +17,11 @@ export async function PUT(req: NextRequest) {
     phone?: string | null;
     department?: string | null;
     speciality?: string | null;
+    signature?: string | null;
+    signatureType?: string | null;
+    clinicName?: string | null;
+    clinicAddress?: string | null;
+    clinicPhone?: string | null;
   };
   const username = (body.username || "").trim().toLowerCase();
   if (!username) return NextResponse.json({ error: "username required" }, { status: 400 });
@@ -30,6 +35,11 @@ export async function PUT(req: NextRequest) {
       phone: body.phone ?? undefined,
       department: body.department ?? undefined,
       speciality: body.speciality ?? undefined,
+      signature: body.signature ?? undefined,
+      signatureType: body.signatureType ?? undefined,
+      clinicName: body.clinicName ?? undefined,
+      clinicAddress: body.clinicAddress ?? undefined,
+      clinicPhone: body.clinicPhone ?? undefined,
     },
     create: {
       userId: user.id,
@@ -38,6 +48,11 @@ export async function PUT(req: NextRequest) {
       phone: body.phone ?? null,
       department: body.department ?? null,
       speciality: body.speciality ?? null,
+      signature: body.signature ?? null,
+      signatureType: body.signatureType ?? null,
+      clinicName: body.clinicName ?? null,
+      clinicAddress: body.clinicAddress ?? null,
+      clinicPhone: body.clinicPhone ?? null,
     },
   });
   return NextResponse.json(upserted);

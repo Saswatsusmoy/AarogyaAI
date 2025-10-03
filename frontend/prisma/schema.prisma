@@ -58,6 +58,11 @@ model DoctorProfile {
   phone        String?
   department   String?
   speciality   String?
+  signature    String?  // Text signature or base64 encoded image
+  signatureType String? // "text" or "image"
+  clinicName   String?  // Clinic name
+  clinicAddress String? // Clinic address
+  clinicPhone  String?  // Clinic phone
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -74,6 +79,8 @@ model Appointment {
   status      AppointmentStatus @default(PENDING)
   notes       String?
   aiNotes     String?        @map("AI-Notes")
+  prescription String?       // JSON string containing prescription details
+  prescriptionPdf String?     // Base64 encoded PDF content
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 

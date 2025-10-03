@@ -315,7 +315,7 @@ export default function DoctorPatientProfile() {
       />
       <Transcripts items={transcripts} partial={partial} />
       <AINotes transcripts={transcripts} appointmentId={appointmentId} />
-      <Prescription patient={profile} patientUsername={username} doctorName={user?.username} />
+      <Prescription patient={profile} patientUsername={username} doctorName={user?.username} appointmentId={appointmentId} />
     </div>
   );
 }

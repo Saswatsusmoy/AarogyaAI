@@ -8,6 +8,11 @@ type Profile = {
   phone?: string | null;
   department?: string | null;
   speciality?: string | null;
+  signature?: string | null;
+  signatureType?: string | null;
+  clinicName?: string | null;
+  clinicAddress?: string | null;
+  clinicPhone?: string | null;
 };
 
 export default function DoctorSettings({ username }: { username: string }) {
@@ -16,6 +21,8 @@ export default function DoctorSettings({ username }: { username: string }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [signatureMode, setSignatureMode] = useState<"text" | "image">("text");
+  const [signatureFile, setSignatureFile] = useState<File | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -23,6 +30,9 @@ export default function DoctorSettings({ username }: { username: string }) {
       .then(r => r.json())
       .then((data: Profile | null) => {
         setProfile(data || {});
+        if (data?.signatureType) {
+          setSignatureMode(data.signatureType as "text" | "image");
+        }
       })
       .catch(() => setError("Failed to load profile"))
       .finally(() => setLoading(false));
@@ -30,6 +40,20 @@ export default function DoctorSettings({ username }: { username: string }) {
 
   const update = <K extends keyof Profile>(key: K, value: Profile[K]) => {
     setProfile(p => ({ ...p, [key]: value }));
+  };
+
+  const handleSignatureFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSignatureFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string;
+        update("signature", base64);
+        update("signatureType", "image");
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -41,7 +65,11 @@ export default function DoctorSettings({ username }: { username: string }) {
       const res = await fetch("/api/doctor/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, ...profile }),
+        body: JSON.stringify({ 
+          username, 
+          ...profile,
+          signatureType: signatureMode 
+        }),
       });
       if (!res.ok) throw new Error("save failed");
       setSaved(true);
@@ -81,6 +109,106 @@ export default function DoctorSettings({ username }: { username: string }) {
         <div className="md:col-span-2">
           <label className="block text-sm mb-1">Speciality</label>
           <input className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none" value={profile.speciality ?? ""} onChange={(e) => update("speciality", e.target.value)} />
+        </div>
+      </div>
+
+      <div className="border border-white/10 rounded p-4">
+        <h3 className="font-medium mb-4">Digital Signature</h3>
+        
+        <div className="space-y-4">
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="signatureMode"
+                value="text"
+                checked={signatureMode === "text"}
+                onChange={(e) => {
+                  setSignatureMode("text");
+                  update("signatureType", "text");
+                }}
+              />
+              <span className="text-sm">Text Signature</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="signatureMode"
+                value="image"
+                checked={signatureMode === "image"}
+                onChange={(e) => {
+                  setSignatureMode("image");
+                  update("signatureType", "image");
+                }}
+              />
+              <span className="text-sm">Upload Image</span>
+            </label>
+          </div>
+
+          {signatureMode === "text" ? (
+            <div>
+              <label className="block text-sm mb-1">Signature Text</label>
+              <input
+                className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
+                value={profile.signature ?? ""}
+                onChange={(e) => update("signature", e.target.value)}
+                placeholder="Dr. John Doe, MBBS"
+              />
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm mb-1">Signature Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleSignatureFileChange}
+                className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-600 file:text-white file:text-sm"
+              />
+              {profile.signature && profile.signatureType === "image" && (
+                <div className="mt-2">
+                  <img
+                    src={profile.signature}
+                    alt="Current signature"
+                    className="max-w-xs max-h-20 border border-white/20 rounded"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="border border-white/10 rounded p-4">
+        <h3 className="font-medium mb-4">Clinic Details</h3>
+        
+        <div className="grid gap-4 md:grid-cols-3">
+          <div>
+            <label className="block text-sm mb-1">Clinic Name</label>
+            <input
+              className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
+              value={profile.clinicName ?? ""}
+              onChange={(e) => update("clinicName", e.target.value)}
+              placeholder="AarogyaAI Clinic"
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Clinic Address</label>
+            <input
+              className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
+              value={profile.clinicAddress ?? ""}
+              onChange={(e) => update("clinicAddress", e.target.value)}
+              placeholder="123 Health Street, City"
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Clinic Phone</label>
+            <input
+              className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
+              value={profile.clinicPhone ?? ""}
+              onChange={(e) => update("clinicPhone", e.target.value)}
+              placeholder="+91-00000-00000"
+            />
+          </div>
         </div>
       </div>
 

@@ -31,11 +31,25 @@ export default function Prescription({
   patientUsername,
   doctorName,
   appointmentId,
+  aiPrescriptionData,
 }: {
   patient: PatientProfile | null;
   patientUsername: string;
   doctorName?: string | null;
   appointmentId?: string | null;
+  aiPrescriptionData?: {
+    diagnoses?: string[];
+    medications?: Array<{
+      name: string;
+      dose: string;
+      route?: string;
+      frequency: string;
+      duration: string;
+      notes?: string;
+    }>;
+    advice?: string;
+    follow_up?: string;
+  } | null;
 }) {
   const [clinicName, setClinicName] = React.useState<string>("AarogyaAI Clinic");
   const [clinicAddress, setClinicAddress] = React.useState<string>("123 Health Street, City");
@@ -50,6 +64,7 @@ export default function Prescription({
   const [saving, setSaving] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
   const [savedMsg, setSavedMsg] = React.useState<string>("");
+  const [aiFilled, setAiFilled] = React.useState<boolean>(false);
 
   // Medical tests dropdown state
   const [availableTests, setAvailableTests] = React.useState<MedicalTest[]>([]);
@@ -235,6 +250,41 @@ export default function Prescription({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Auto-fill prescription fields when AI data is available
+  React.useEffect(() => {
+    if (aiPrescriptionData && !diagnosis && medications.length === 0 && !aiFilled) {
+      // Fill diagnosis
+      if (aiPrescriptionData.diagnoses && aiPrescriptionData.diagnoses.length > 0) {
+        setDiagnosis(aiPrescriptionData.diagnoses.join(', '));
+      }
+
+      // Fill medications
+      if (aiPrescriptionData.medications && aiPrescriptionData.medications.length > 0) {
+        const formattedMedications = aiPrescriptionData.medications.map(med => ({
+          name: med.name,
+          dosage: med.dose,
+          frequency: med.frequency,
+          duration: med.duration,
+          notes: med.notes || ''
+        }));
+        setMedications(formattedMedications);
+      }
+
+      // Fill advice
+      if (aiPrescriptionData.advice) {
+        setAdvice(aiPrescriptionData.advice);
+      }
+
+      // Fill follow-up
+      if (aiPrescriptionData.follow_up) {
+        setFollowUp(aiPrescriptionData.follow_up);
+      }
+
+      setAiFilled(true);
+    }
+  }, [aiPrescriptionData, diagnosis, medications.length, aiFilled]);
+
+
   const printAsPDF = async () => {
     const win = window.open("", "_blank");
     if (!win) return;
@@ -381,7 +431,14 @@ export default function Prescription({
   return (
     <div className="border border-white/10 rounded p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-medium">Prescription</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-medium">Prescription</h2>
+          {aiFilled && (
+            <span className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded">
+              AI Generated
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {appointmentId && (
             <button

@@ -21,9 +21,14 @@ SYSTEM_NOTES = (
 
 SYSTEM_PRESCRIPTION = (
     "You are a medical prescription assistant. From the same transcript, extract a structured, editable prescription draft."
-    " Return strict JSON with keys: patient, diagnoses, medications, tests, advice, follow_up."
+    " Return strict JSON with keys: diagnoses, medications, advice, follow_up."
     " medications is a list of {name, dose, route, frequency, duration, notes}."
-    " Use null where data is missing. Do not include extra keys or prose."
+    " Keep all content very brief and concise. Use null where data is missing. Do not include extra keys or prose."
+    " For diagnoses: list only the main conditions mentioned (2-3 words max each)."
+    " For medications: use common drug names, standard dosages, and brief instructions."
+    " For advice: keep to 1-2 sentences maximum."
+    " For follow_up: keep to 1 sentence maximum."
+    " Do not generate any test recommendations - tests should be selected manually by the doctor."
 )
 
 
@@ -99,21 +104,19 @@ class CerebrasClient:
         if not self.api_key or self.api_key == "csk-hm84td8rpjm3ytt36k3933tdph6wtkk93em8ef2ck9x34v":
             # Return mock prescription data for testing
             return {
-                "patient": "Patient Name",
-                "diagnoses": ["Symptom evaluation", "General consultation"],
+                "diagnoses": ["Pain", "Inflammation"],
                 "medications": [
                     {
-                        "name": "Pain relief medication",
-                        "dose": "As needed",
+                        "name": "Ibuprofen",
+                        "dose": "400mg",
                         "route": "Oral",
-                        "frequency": "PRN",
-                        "duration": "7 days",
-                        "notes": "Take with food if stomach upset occurs"
+                        "frequency": "TID",
+                        "duration": "5 days",
+                        "notes": "With food"
                     }
                 ],
-                "tests": ["Follow-up in 1 week if symptoms persist"],
-                "advice": "Rest, stay hydrated, monitor symptoms",
-                "follow_up": "Return if symptoms worsen or persist beyond 7 days"
+                "advice": "Rest and ice application",
+                "follow_up": "Return in 1 week"
             }
 
         messages = [

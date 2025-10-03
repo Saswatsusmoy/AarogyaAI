@@ -56,6 +56,7 @@ export default function DoctorPatientProfile() {
 
   const [transcripts, setTranscripts] = useState<{ text: string; createdAt?: string }[]>([]);
   const [partial, setPartial] = useState<string>("");
+  const [aiPrescriptionData, setAiPrescriptionData] = useState<any>(null);
 
   const [sessionBuffer, setSessionBuffer] = useState<string>("");
 
@@ -314,8 +315,18 @@ export default function DoctorPatientProfile() {
         }}
       />
       <Transcripts items={transcripts} partial={partial} />
-      <AINotes transcripts={transcripts} appointmentId={appointmentId} />
-      <Prescription patient={profile} patientUsername={username} doctorName={user?.username} appointmentId={appointmentId} />
+      <AINotes 
+        transcripts={transcripts} 
+        appointmentId={appointmentId} 
+        onPrescriptionDataGenerated={setAiPrescriptionData}
+      />
+      <Prescription 
+        patient={profile} 
+        patientUsername={username} 
+        doctorName={user?.username} 
+        appointmentId={appointmentId}
+        aiPrescriptionData={aiPrescriptionData}
+      />
     </div>
   );
 }

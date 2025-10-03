@@ -71,6 +71,7 @@ export async function PUT(req: NextRequest) {
     aiNotes?: string | null;
     prescription?: string | null;
     prescriptionPdf?: string | null;
+    recommendedTests?: string | null;
   };
   if (!body.id) return NextResponse.json({ error: "id required" }, { status: 400 });
   const data: any = {};
@@ -79,6 +80,7 @@ export async function PUT(req: NextRequest) {
   if (typeof body.aiNotes !== "undefined") data.aiNotes = body.aiNotes;
   if (typeof body.prescription !== "undefined") data.prescription = body.prescription;
   if (typeof body.prescriptionPdf !== "undefined") data.prescriptionPdf = body.prescriptionPdf;
+  if (typeof body.recommendedTests !== "undefined") data.recommendedTests = body.recommendedTests;
   if (typeof body.scheduledAt !== "undefined") {
     data.scheduledAt = body.scheduledAt ? new Date(body.scheduledAt) : undefined;
   }

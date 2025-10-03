@@ -21,6 +21,11 @@ type Medication = {
   notes?: string;
 };
 
+type MedicalTest = {
+  TestID: string;
+  TestName: string;
+};
+
 export default function Prescription({
   patient,
   patientUsername,
@@ -38,6 +43,7 @@ export default function Prescription({
 
   const [diagnosis, setDiagnosis] = React.useState<string>("");
   const [medications, setMedications] = React.useState<Medication[]>([]);
+  const [recommendedTests, setRecommendedTests] = React.useState<string[]>([]);
   const [advice, setAdvice] = React.useState<string>("");
   const [followUp, setFollowUp] = React.useState<string>("");
   const [signature, setSignature] = React.useState<string>(doctorName || "");
@@ -45,9 +51,34 @@ export default function Prescription({
   const [error, setError] = React.useState<string | null>(null);
   const [savedMsg, setSavedMsg] = React.useState<string>("");
 
+  // Medical tests dropdown state
+  const [availableTests, setAvailableTests] = React.useState<MedicalTest[]>([]);
+  const [testSearchTerm, setTestSearchTerm] = React.useState<string>("");
+  const [showTestDropdown, setShowTestDropdown] = React.useState<boolean>(false);
+  const [selectedTestIds, setSelectedTestIds] = React.useState<string[]>([]);
+
+  // Load medical tests
+  const loadMedicalTests = async (searchTerm: string = "") => {
+    try {
+      const url = searchTerm 
+        ? `/api/medical-tests?search=${encodeURIComponent(searchTerm)}&limit=20`
+        : `/api/medical-tests?limit=20`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const tests = await res.json();
+        setAvailableTests(tests);
+      }
+    } catch (error) {
+      console.error("Failed to load medical tests:", error);
+    }
+  };
+
   // Load doctor signature, clinic details and existing prescription data
   React.useEffect(() => {
     async function loadData() {
+      // Load medical tests
+      await loadMedicalTests();
+
       // Load doctor profile data (signature and clinic details)
       if (doctorName) {
         try {
@@ -84,12 +115,18 @@ export default function Prescription({
             setClinicPhone(data.clinicPhone || "+91-00000-00000");
             setDiagnosis(data.diagnosis || "");
             setMedications(data.medications || []);
+            setRecommendedTests(data.recommendedTests || []);
             setAdvice(data.advice || "");
             setFollowUp(data.followUp || "");
             // Don't override signature if we already loaded it from doctor profile
             if (!profile?.signature) {
               setSignature(data.signature || doctorName || "");
             }
+          }
+          // Load recommended tests
+          if (appt?.recommendedTests) {
+            const testIds = JSON.parse(appt.recommendedTests);
+            setSelectedTestIds(testIds);
           }
         }
       } catch {}
@@ -110,6 +147,7 @@ export default function Prescription({
         clinicPhone,
         diagnosis,
         medications,
+        recommendedTests,
         advice,
         followUp,
         signature,
@@ -120,7 +158,8 @@ export default function Prescription({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           id: appointmentId, 
-          prescription: JSON.stringify(prescriptionData) 
+          prescription: JSON.stringify(prescriptionData),
+          recommendedTests: JSON.stringify(selectedTestIds)
         }),
       });
       
@@ -154,6 +193,47 @@ export default function Prescription({
       prev.map((m, i) => (i === idx ? { ...m, [field]: value } : m))
     );
   };
+
+  // Medical test functions
+  const handleTestSearch = (searchTerm: string) => {
+    setTestSearchTerm(searchTerm);
+    loadMedicalTests(searchTerm);
+    setShowTestDropdown(true);
+  };
+
+  const selectTest = (test: MedicalTest) => {
+    if (!selectedTestIds.includes(test.TestID)) {
+      setSelectedTestIds(prev => [...prev, test.TestID]);
+      setRecommendedTests(prev => [...prev, test.TestName]);
+    }
+    setTestSearchTerm("");
+    setShowTestDropdown(false);
+  };
+
+  const removeTest = (testId: string) => {
+    const test = availableTests.find(t => t.TestID === testId);
+    setSelectedTestIds(prev => prev.filter(id => id !== testId));
+    if (test) {
+      setRecommendedTests(prev => prev.filter(name => name !== test.TestName));
+    }
+  };
+
+  const getSelectedTests = () => {
+    return availableTests.filter(test => selectedTestIds.includes(test.TestID));
+  };
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.test-dropdown-container')) {
+        setShowTestDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const printAsPDF = async () => {
     const win = window.open("", "_blank");
@@ -243,6 +323,11 @@ export default function Prescription({
                 ${medsHtml}
               </tbody>
             </table>
+          </div>
+
+          <div class="section">
+            <div class="h2">Tests (Recommended)</div>
+            <div>${recommendedTests.length > 0 ? recommendedTests.map(test => '• ' + test).join('<br/>') : 'No tests recommended.'}</div>
           </div>
 
           <div class="section">
@@ -461,6 +546,60 @@ export default function Prescription({
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="space-y-3">
+        <div className="font-medium">Tests (Recommended)</div>
+        <div className="relative test-dropdown-container">
+          <input
+            type="text"
+            className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none"
+            placeholder="Search for medical tests..."
+            value={testSearchTerm}
+            onChange={(e) => handleTestSearch(e.target.value)}
+            onFocus={() => setShowTestDropdown(true)}
+          />
+          {showTestDropdown && (
+            <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-white/20 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              {availableTests.length > 0 ? (
+                availableTests.map((test) => (
+                  <div
+                    key={test.TestID}
+                    className="px-3 py-2 hover:bg-gray-700 cursor-pointer border-b border-white/10 last:border-b-0"
+                    onClick={() => selectTest(test)}
+                  >
+                    <div className="font-medium text-sm">{test.TestName}</div>
+                  </div>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-gray-400 text-sm">No tests found</div>
+              )}
+            </div>
+          )}
+        </div>
+        
+        {/* Selected Tests */}
+        {getSelectedTests().length > 0 && (
+          <div className="space-y-2">
+            <div className="text-sm text-gray-300">Selected Tests:</div>
+            <div className="flex flex-wrap gap-2">
+              {getSelectedTests().map((test) => (
+                <div
+                  key={test.TestID}
+                  className="flex items-center gap-2 px-3 py-1 bg-blue-600/20 border border-blue-500/30 rounded-md text-sm"
+                >
+                  <span>{test.TestName}</span>
+                  <button
+                    onClick={() => removeTest(test.TestID)}
+                    className="text-red-400 hover:text-red-300 text-xs"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid md:grid-cols-2 gap-3">

@@ -25,7 +25,10 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "user not found" }, { status: 404 });
   const where = role === "patient" ? { patientId: user.id } : { doctorId: user.id };
   const data = await prisma.appointment.findMany({
-    where,
+    where: {
+      ...where,
+      status: { not: "DECLINED" } // Exclude declined appointments
+    },
     orderBy: { scheduledAt: "asc" },
     include: { patient: { select: { username: true } }, doctor: { select: { username: true } } },
   });
@@ -74,6 +77,27 @@ export async function PUT(req: NextRequest) {
     recommendedTests?: string | null;
   };
   if (!body.id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  
+  // If status is DECLINED, delete the appointment and associated payment
+  if (body.status === "DECLINED") {
+    try {
+      // First, delete associated payment if it exists
+      await prisma.payment.deleteMany({
+        where: { appointmentId: body.id }
+      });
+      
+      // Then delete the appointment
+      await prisma.appointment.delete({
+        where: { id: body.id }
+      });
+      
+      return NextResponse.json({ message: "Appointment declined and deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting appointment:", error);
+      return NextResponse.json({ error: "Failed to delete appointment" }, { status: 500 });
+    }
+  }
+  
   const data: any = {};
   if (body.status) data.status = body.status;
   if (typeof body.notes !== "undefined") data.notes = body.notes;
@@ -86,4 +110,26 @@ export async function PUT(req: NextRequest) {
   }
   const updated = await prisma.appointment.update({ where: { id: body.id }, data });
   return NextResponse.json(updated);
+}
+
+export async function DELETE(req: NextRequest) {
+  const id = req.nextUrl.searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  
+  try {
+    // First, delete associated payment if it exists (cascade should handle this, but being explicit)
+    await prisma.payment.deleteMany({
+      where: { appointmentId: id }
+    });
+    
+    // Then delete the appointment
+    await prisma.appointment.delete({
+      where: { id }
+    });
+    
+    return NextResponse.json({ message: "Appointment deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting appointment:", error);
+    return NextResponse.json({ error: "Failed to delete appointment" }, { status: 500 });
+  }
 }

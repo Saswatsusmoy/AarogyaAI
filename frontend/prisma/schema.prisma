@@ -25,6 +25,10 @@ model User {
 
   // Chat History
   chatHistory ChatHistory[]
+  
+  // Payments
+  patientPayments Payment[] @relation("PatientPayments")
+  doctorPayments  Payment[] @relation("DoctorPayments")
 }
 
 enum Role {
@@ -90,6 +94,7 @@ model Appointment {
 
   // Relations
   transcriptions AppointmentTranscription[]
+  payment        Payment?
 }
 
 model AppointmentTranscription {
@@ -116,10 +121,79 @@ model ChatHistory {
   @@index([patientId, createdAt])
 }
 
+model Payment {
+  id            String        @id @default(cuid())
+  appointmentId String        @unique
+  appointment   Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  patientId     String
+  doctorId      String
+  patient       User          @relation(name: "PatientPayments", fields: [patientId], references: [id])
+  doctor        User          @relation(name: "DoctorPayments", fields: [doctorId], references: [id])
+  
+  // Payment details
+  amount        Float
+  currency      String        @default("INR")
+  status        PaymentStatus @default(PENDING)
+  method        PaymentMethod
+  
+  // Transaction details
+  transactionId String?       // External payment gateway transaction ID
+  upiId         String?       // UPI ID used for payment
+  cardLast4     String?       // Last 4 digits of card
+  cardType      String?       // Visa, Mastercard, etc.
+  
+  // Payment gateway response
+  gatewayResponse String?     // JSON response from payment gateway
+  failureReason   String?     // Reason for payment failure
+  
+  // Timestamps
+  paidAt        DateTime?     // When payment was completed
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // Relations
+  logs          PaymentLog[]
+}
+
+model PaymentLog {
+  id          String   @id @default(cuid())
+  paymentId   String
+  payment     Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  
+  // Log details
+  action      String   // "created", "initiated", "completed", "failed", "refunded"
+  status      String   // Status at time of log entry
+  amount      Float?   // Amount at time of log entry
+  
+  // Additional data
+  metadata    String?  // JSON string with additional log data
+  ipAddress   String?  // IP address of the user
+  userAgent   String?  // User agent string
+  
+  // Timestamp
+  createdAt   DateTime @default(now())
+}
+
 enum AppointmentStatus {
   PENDING
   ACCEPTED
   DECLINED
   COMPLETED
   CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  UPI
+  CARD
+  NET_BANKING
+  WALLET
 }

@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import DoctorSettings from "./DoctorSettings";
 import DoctorAppointments from "./DoctorAppointments";
 import DoctorPatients from "./DoctorPatients";
+import DoctorPayments from "./DoctorPayments";
 
 export default function DoctorDashboard() {
   const { user, loading, logout } = useAuth();
@@ -55,9 +56,12 @@ export default function DoctorDashboard() {
         );
       case "payments":
         return (
-          <div className="border border-white/10 rounded p-4">
-            <h2 className="font-medium mb-2">Payments</h2>
-            <p className="text-sm opacity-80">Invoices and payment history will appear here.</p>
+          <div className="space-y-4">
+            <div className="border border-white/10 rounded p-4">
+              <h2 className="font-medium mb-2">Payments</h2>
+              <p className="text-sm opacity-80">View payment history and statistics.</p>
+            </div>
+            <DoctorPayments username={user.username} />
           </div>
         );
       case "settings":

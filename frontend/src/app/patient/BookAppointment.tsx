@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import DateTimePicker from "./DateTimePicker";
+import PaymentModal from "./PaymentModal";
 
 type Doctor = { username: string };
 
@@ -13,21 +14,42 @@ export default function BookAppointment({ patientUsername }: { patientUsername: 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  
+  // Payment states
+  const [showPayment, setShowPayment] = useState(false);
+  const [appointmentId, setAppointmentId] = useState<string | null>(null);
+  const [doctorId, setDoctorId] = useState<string | null>(null);
+  const [patientId, setPatientId] = useState<string | null>(null);
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [paymentInProgress, setPaymentInProgress] = useState(false);
+  
+  // Payment amount (can be dynamic based on doctor/specialty)
+  const consultationFee = 500; // Default consultation fee
 
   useEffect(() => {
     // Load all doctors from /api/users (simple map), filter role doctor
     fetch("/api/users").then(r => r.json()).then((map: Record<string, { role: string }>) => {
       const list = Object.values(map).filter(u => u.role === "doctor").map(u => ({ username: (u as any).username }));
       setDoctors(list);
-      if (list[0]) setDoctorUsername(list[0].username);
+      if (list[0]) {
+        setDoctorUsername(list[0].username);
+        setSelectedDoctor(list[0]);
+      }
     }).catch(() => setDoctors([]));
-  }, []);
+    
+    // Get patient ID
+    fetch("/api/users").then(r => r.json()).then((map: Record<string, { id: string }>) => {
+      const patient = Object.values(map).find(u => (u as any).username === patientUsername);
+      if (patient) setPatientId(patient.id);
+    }).catch(() => {});
+  }, [patientUsername]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSaved(false);
     setSubmitting(true);
+    setPaymentInProgress(false);
     try {
       const res = await fetch("/api/appointments", {
         method: "POST",
@@ -38,13 +60,39 @@ export default function BookAppointment({ patientUsername }: { patientUsername: 
         body: JSON.stringify({ patientUsername, doctorUsername, scheduledAt: datetime ? new Date(datetime).toISOString() : null, reason: reason || null }),
       });
       if (!res.ok) throw new Error("create failed");
-      setSaved(true);
+      
+      const appointment = await res.json();
+      setAppointmentId(appointment.id);
+      
+      // Get doctor ID for payment
+      const usersRes = await fetch("/api/users");
+      const users = await usersRes.json();
+      const doctor = Object.values(users).find((u: any) => u.username === doctorUsername);
+      if (doctor) setDoctorId((doctor as any).id);
+      
+      // Don't set saved=true yet - wait for payment completion
       setReason("");
+      
+      // Show payment modal
+      setPaymentInProgress(true);
+      setShowPayment(true);
     } catch {
       setError("Failed to book appointment");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowPayment(false);
+    setPaymentInProgress(false);
+    setSaved(true);
+  };
+
+  const handlePaymentClose = () => {
+    setShowPayment(false);
+    setPaymentInProgress(false);
+    // Don't reset appointmentId so user can retry payment
   };
 
   return (
@@ -68,10 +116,32 @@ export default function BookAppointment({ patientUsername }: { patientUsername: 
         </div>
       </div>
       <div className="flex items-center gap-4">
-        <button type="submit" disabled={submitting} className="px-4 py-2 rounded bg-foreground text-background disabled:opacity-60">{submitting ? "Booking..." : "Book"}</button>
-        {saved && <span className="text-sm text-green-500">Booked</span>}
+        <button 
+          type="submit" 
+          disabled={submitting || paymentInProgress} 
+          className="px-4 py-2 rounded bg-foreground text-background disabled:opacity-60"
+        >
+          {submitting ? "Booking..." : paymentInProgress ? "Payment in Progress..." : "Book"}
+        </button>
+        {saved && <span className="text-sm text-green-500">Booked & Paid</span>}
+        {paymentInProgress && <span className="text-sm text-blue-500">Complete payment to finish booking</span>}
         {error && <span className="text-sm text-red-500">{error}</span>}
       </div>
+      
+      {/* Payment Modal */}
+      {showPayment && appointmentId && doctorId && patientId && (
+        <PaymentModal
+          isOpen={showPayment}
+          onClose={handlePaymentClose}
+          onSuccess={handlePaymentSuccess}
+          appointmentId={appointmentId}
+          patientId={patientId}
+          doctorId={doctorId}
+          amount={consultationFee}
+          doctorName={doctorUsername}
+          appointmentDate={datetime}
+        />
+      )}
     </form>
   );
 }

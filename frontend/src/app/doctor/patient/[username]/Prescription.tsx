@@ -91,7 +91,7 @@ export default function Prescription({
   // Load doctor signature, clinic details and existing prescription data
   React.useEffect(() => {
     async function loadData() {
-      // Load medical tests
+      // Load medical tests first
       await loadMedicalTests();
 
       // Load doctor profile data (signature and clinic details)
@@ -148,6 +148,17 @@ export default function Prescription({
     }
     loadData();
   }, [appointmentId, doctorName]);
+
+  // Update recommendedTests state when selectedTestIds or availableTests change
+  React.useEffect(() => {
+    if (selectedTestIds.length > 0 && availableTests.length > 0) {
+      const testNames = selectedTestIds.map((testId: string) => {
+        const test = availableTests.find(t => t.TestID === testId);
+        return test ? test.TestName : `Test ID: ${testId}`;
+      });
+      setRecommendedTests(testNames);
+    }
+  }, [selectedTestIds, availableTests]);
 
   const savePrescription = async () => {
     if (!appointmentId) return;
@@ -289,6 +300,38 @@ export default function Prescription({
 
 
   const printAsPDF = async () => {
+    // Save prescription data first before printing
+    if (appointmentId) {
+      try {
+        const prescriptionData = {
+          clinicName,
+          clinicAddress,
+          clinicPhone,
+          diagnosis,
+          medications,
+          recommendedTests,
+          advice,
+          followUp,
+          signature,
+        };
+        
+        await fetch("/api/appointments", {
+          method: "PUT",
+          headers: { 
+            "Content-Type": "application/json",
+            "User-Agent": "AarogyaAI-Frontend/1.0.0",
+          },
+          body: JSON.stringify({ 
+            id: appointmentId, 
+            prescription: JSON.stringify(prescriptionData),
+            recommendedTests: JSON.stringify(selectedTestIds)
+          }),
+        });
+      } catch (e) {
+        console.error("Failed to save prescription before printing:", e);
+      }
+    }
+
     const win = window.open("", "_blank");
     if (!win) return;
 

@@ -59,9 +59,11 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
 export default function AINotes({
   transcripts,
   appointmentId,
+  onPrescriptionDataGenerated,
 }: {
   transcripts: { text: string }[];
   appointmentId?: string | null;
+  onPrescriptionDataGenerated?: (data: any) => void;
 }) {
   const [notes, setNotes] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -88,6 +90,11 @@ export default function AINotes({
       if (!res.ok) throw new Error("AI notes generation failed");
       const data = await res.json();
       setNotes(data.notes || "");
+
+      // Pass prescription data to parent component
+      if (onPrescriptionDataGenerated && data.prescription) {
+        onPrescriptionDataGenerated(data.prescription);
+      }
 
       // Persist AI notes to appointment if available
       if (appointmentId) {

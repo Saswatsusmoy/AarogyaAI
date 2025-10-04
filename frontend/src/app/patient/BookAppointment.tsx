@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import DateTimePicker from "./DateTimePicker";
 
 type Doctor = { username: string };
 
@@ -52,10 +53,12 @@ export default function BookAppointment({ patientUsername }: { patientUsername: 
             {doctors.map(d => <option key={d.username} value={d.username}>{d.username}</option>)}
           </select>
         </div>
-        <div>
-          <label className="block text-sm mb-1">Date & Time</label>
-          <input type="datetime-local" className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none" value={datetime} onChange={(e) => setDatetime(e.target.value)} required />
-        </div>
+        <DateTimePicker
+          label="Date & Time"
+          value={datetime}
+          onChange={setDatetime}
+          minDate={new Date().toISOString().slice(0, 16)}
+        />
         <div className="md:col-span-2">
           <label className="block text-sm mb-1">Reason (optional)</label>
           <input className="w-full px-3 py-2 rounded border border-white/20 bg-transparent outline-none" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Describe your concern" />

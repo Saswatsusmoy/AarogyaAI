@@ -5,6 +5,7 @@ import DoctorScribe from "./DoctorScribe";
 import SpeechToText from "./SpeechToText";
 import Transcripts from "./Transcripts";
 import AINotes from "./AINotes";
+import Prescription from "./Prescription";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
@@ -55,6 +56,7 @@ export default function DoctorPatientProfile() {
 
   const [transcripts, setTranscripts] = useState<{ text: string; createdAt?: string }[]>([]);
   const [partial, setPartial] = useState<string>("");
+  const [aiPrescriptionData, setAiPrescriptionData] = useState<any>(null);
 
   const [sessionBuffer, setSessionBuffer] = useState<string>("");
 
@@ -313,7 +315,18 @@ export default function DoctorPatientProfile() {
         }}
       />
       <Transcripts items={transcripts} partial={partial} />
-      <AINotes transcripts={transcripts} appointmentId={appointmentId} />
+      <AINotes 
+        transcripts={transcripts} 
+        appointmentId={appointmentId} 
+        onPrescriptionDataGenerated={setAiPrescriptionData}
+      />
+      <Prescription 
+        patient={profile} 
+        patientUsername={username} 
+        doctorName={user?.username} 
+        appointmentId={appointmentId}
+        aiPrescriptionData={aiPrescriptionData}
+      />
     </div>
   );
 }

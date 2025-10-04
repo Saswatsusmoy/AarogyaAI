@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from dotenv import load_dotenv
 
 
-load_dotenv()
+# Load .env file from the backend directory
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 
 @dataclass

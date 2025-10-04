@@ -217,9 +217,129 @@ export default function AppointmentDetailsModal({ appointmentId, onClose }: Appo
               {appointment.prescription && (
                 <div className="border border-white/10 rounded p-4">
                   <h3 className="font-medium mb-3">Prescription</h3>
-                  <div className="text-sm whitespace-pre-wrap bg-white/5 p-3 rounded">
-                    {appointment.prescription}
-                  </div>
+                  {(() => {
+                    const prescriptionData = parsePrescription(appointment.prescription);
+                    if (!prescriptionData) {
+                      return (
+                        <div className="text-sm whitespace-pre-wrap bg-white/5 p-3 rounded">
+                          {appointment.prescription}
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <div className="space-y-4 bg-white/5 p-4 rounded">
+                        {/* Clinic Details */}
+                        {(prescriptionData.clinicName || prescriptionData.clinicAddress || prescriptionData.clinicPhone) && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2">Clinic Details</h4>
+                            <div className="text-sm space-y-1">
+                              {prescriptionData.clinicName && <div><strong>Name:</strong> {prescriptionData.clinicName}</div>}
+                              {prescriptionData.clinicAddress && <div><strong>Address:</strong> {prescriptionData.clinicAddress}</div>}
+                              {prescriptionData.clinicPhone && <div><strong>Phone:</strong> {prescriptionData.clinicPhone}</div>}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Diagnosis */}
+                        {prescriptionData.diagnosis && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2">Diagnosis</h4>
+                            <div className="text-sm bg-white/10 p-3 rounded">
+                              {prescriptionData.diagnosis}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Medications */}
+                        {prescriptionData.medications && prescriptionData.medications.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2">Medications</h4>
+                            <div className="space-y-2">
+                              {prescriptionData.medications.map((med: any, index: number) => (
+                                <div key={index} className="bg-white/10 p-3 rounded border border-white/10">
+                                  <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+                                    <div>
+                                      <span className="opacity-70">Name:</span>
+                                      <div className="font-medium">{med.name || '-'}</div>
+                                    </div>
+                                    <div>
+                                      <span className="opacity-70">Dosage:</span>
+                                      <div className="font-medium">{med.dosage || '-'}</div>
+                                    </div>
+                                    <div>
+                                      <span className="opacity-70">Frequency:</span>
+                                      <div className="font-medium">{med.frequency || '-'}</div>
+                                    </div>
+                                    <div>
+                                      <span className="opacity-70">Duration:</span>
+                                      <div className="font-medium">{med.duration || '-'}</div>
+                                    </div>
+                                    <div className="md:col-span-1 col-span-2">
+                                      <span className="opacity-70">Notes:</span>
+                                      <div className="font-medium">{med.notes || '-'}</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Recommended Tests */}
+                        {prescriptionData.recommendedTests && prescriptionData.recommendedTests.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2">Recommended Tests</h4>
+                            <div className="text-sm bg-white/10 p-3 rounded">
+                              <ul className="list-disc list-inside space-y-1">
+                                {prescriptionData.recommendedTests.map((test: string, index: number) => (
+                                  <li key={index}>{test}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Advice */}
+                        {prescriptionData.advice && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2">Advice</h4>
+                            <div className="text-sm bg-white/10 p-3 rounded">
+                              {prescriptionData.advice}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Follow-up */}
+                        {prescriptionData.followUp && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2">Follow-up</h4>
+                            <div className="text-sm bg-white/10 p-3 rounded">
+                              {prescriptionData.followUp}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Signature */}
+                        {prescriptionData.signature && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2">Doctor Signature</h4>
+                            <div className="text-sm bg-white/10 p-3 rounded text-right">
+                              {prescriptionData.signature.startsWith('data:image') ? (
+                                <img 
+                                  src={prescriptionData.signature} 
+                                  alt="Doctor Signature" 
+                                  className="max-h-12 max-w-48 inline-block"
+                                />
+                              ) : (
+                                prescriptionData.signature
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 

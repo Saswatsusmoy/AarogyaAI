@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import DoctorAppointmentDetails from "./DoctorAppointmentDetails";
 
 type Appointment = {
   id: string;
@@ -9,6 +10,13 @@ type Appointment = {
   reason?: string | null;
   status: "PENDING" | "ACCEPTED" | "DECLINED" | "COMPLETED" | "CANCELLED";
   patient: { username: string };
+  payment?: {
+    payment_status?: string;
+    payment_amount?: number;
+    payment_method?: string;
+    payment_transaction_id?: string;
+    payment_paid_at?: string;
+  };
 };
 
 function startOfMonth(d: Date) {
@@ -37,6 +45,8 @@ export default function DoctorAppointments({ username }: { username: string }) {
   });
   const [showStartModal, setShowStartModal] = useState(false);
   const [activeApptId, setActiveApptId] = useState<string | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [detailsApptId, setDetailsApptId] = useState<string | null>(null);
 
   const fetchList = async () => {
     setLoading(true);
@@ -44,7 +54,37 @@ export default function DoctorAppointments({ username }: { username: string }) {
     try {
       const res = await fetch(`/api/appointments?username=${encodeURIComponent(username)}&role=doctor`);
       const data = await res.json();
-      setList(data || []);
+      
+      // Filter out declined appointments and fetch payment information for each appointment
+      const validAppointments = (data || []).filter((appointment: any) => appointment.status !== "DECLINED");
+      
+      const appointmentsWithPayments = await Promise.all(
+        validAppointments.map(async (appointment: any) => {
+          try {
+            const BACKEND_BASE = process.env.NEXT_PUBLIC_STT_BACKEND_URL || "http://localhost:8080";
+            const paymentResponse = await fetch(`${BACKEND_BASE}/appointment/${appointment.id}/payment`);
+            
+            if (paymentResponse.ok) {
+              const paymentData = await paymentResponse.json();
+              if (paymentData.appointment) {
+                appointment.payment = {
+                  payment_status: paymentData.appointment.payment_status,
+                  payment_amount: paymentData.appointment.payment_amount,
+                  payment_method: paymentData.appointment.payment_method,
+                  payment_transaction_id: paymentData.appointment.payment_transaction_id,
+                  payment_paid_at: paymentData.appointment.payment_paid_at,
+                };
+              }
+            }
+          } catch (paymentErr) {
+            console.log("Payment information not available for appointment:", appointment.id);
+          }
+          
+          return appointment;
+        })
+      );
+      
+      setList(appointmentsWithPayments);
     } catch {
       setError("Failed to load");
     } finally {
@@ -77,6 +117,16 @@ export default function DoctorAppointments({ username }: { username: string }) {
   const closeStartModal = () => {
     setShowStartModal(false);
     setActiveApptId(null);
+  };
+
+  const openDetailsModal = (id: string) => {
+    setDetailsApptId(id);
+    setShowDetailsModal(true);
+  };
+
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
+    setDetailsApptId(null);
   };
 
   const days = useMemo(() => {
@@ -132,11 +182,38 @@ export default function DoctorAppointments({ username }: { username: string }) {
           {list.map(a => (
             <div key={a.id} className="border border-white/10 rounded p-3">
               <div className="flex items-center justify-between">
-                <div>
+                <div className="flex-1">
                   <div className="font-medium">Patient {a.patient.username}</div>
                   <div className="text-sm opacity-80">{new Date(a.scheduledAt).toLocaleString()} {a.reason ? `• ${a.reason}` : ""}</div>
+                  {a.payment && (
+                    <div className="text-xs mt-1 flex items-center gap-2">
+                      <span className={`px-1 py-0.5 rounded ${
+                        a.payment.payment_status === 'COMPLETED' 
+                          ? 'bg-green-500/20 text-green-400'
+                          : a.payment.payment_status === 'PENDING'
+                          ? 'bg-yellow-500/20 text-yellow-400'
+                          : 'bg-red-500/20 text-red-400'
+                      }`}>
+                        {a.payment.payment_status}
+                      </span>
+                      {a.payment.payment_amount && (
+                        <span className="text-green-400">₹{a.payment.payment_amount}</span>
+                      )}
+                      {a.payment.payment_method && (
+                        <span className="opacity-70">{a.payment.payment_method}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className="text-xs px-2 py-1 rounded border border-white/20">{a.status}</div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    className="text-xs px-2 py-1 rounded border border-white/20 hover:bg-white/10 transition-colors"
+                    onClick={() => openDetailsModal(a.id)}
+                  >
+                    View Details
+                  </button>
+                  <div className="text-xs px-2 py-1 rounded border border-white/20">{a.status}</div>
+                </div>
               </div>
               <div className="mt-2 flex gap-2">
                 {a.status === "PENDING" && (
@@ -194,6 +271,15 @@ export default function DoctorAppointments({ username }: { username: string }) {
             })}
           </div>
         </div>
+      )}
+
+      {/* Appointment Details Modal */}
+      {detailsApptId && (
+        <DoctorAppointmentDetails
+          appointmentId={detailsApptId}
+          isOpen={showDetailsModal}
+          onClose={closeDetailsModal}
+        />
       )}
     </div>
   );

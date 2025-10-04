@@ -1,17 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import BookTestModal from "./BookTestModal";
 
 type AppointmentTranscription = {
   id: string;
   text: string;
   createdAt: string;
-};
-
-type MedicalTest = {
-  TestID: string;
-  TestName: string;
 };
 
 type PaymentInfo = {
@@ -41,37 +35,22 @@ type AppointmentDetails = {
   payment?: PaymentInfo;
 };
 
-type AppointmentDetailsModalProps = {
-  appointmentId: string | null;
+type DoctorAppointmentDetailsProps = {
+  appointmentId: string;
+  isOpen: boolean;
   onClose: () => void;
 };
 
-export default function AppointmentDetailsModal({ appointmentId, onClose }: AppointmentDetailsModalProps) {
+export default function DoctorAppointmentDetails({ appointmentId, isOpen, onClose }: DoctorAppointmentDetailsProps) {
   const [appointment, setAppointment] = useState<AppointmentDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [medicalTests, setMedicalTests] = useState<MedicalTest[]>([]);
-  const [showBookingModal, setShowBookingModal] = useState(false);
-  const [selectedTestId, setSelectedTestId] = useState<string | undefined>();
 
   useEffect(() => {
-    if (appointmentId) {
+    if (isOpen && appointmentId) {
       fetchAppointmentDetails();
-      fetchMedicalTests();
     }
-  }, [appointmentId]);
-
-  const fetchMedicalTests = async () => {
-    try {
-      const res = await fetch('/api/medical-tests?limit=200');
-      if (res.ok) {
-        const tests = await res.json();
-        setMedicalTests(tests);
-      }
-    } catch (error) {
-      console.error('Failed to fetch medical tests:', error);
-    }
-  };
+  }, [isOpen, appointmentId]);
 
   const fetchAppointmentDetails = async () => {
     if (!appointmentId) return;
@@ -145,22 +124,7 @@ export default function AppointmentDetailsModal({ appointmentId, onClose }: Appo
     }
   };
 
-  const getTestName = (testId: string) => {
-    const test = medicalTests.find(t => t.TestID === testId);
-    return test ? test.TestName : `Test ID: ${testId}`;
-  };
-
-  const handleBookTest = (testId: string) => {
-    setSelectedTestId(testId);
-    setShowBookingModal(true);
-  };
-
-  const handleBookingSuccess = () => {
-    setShowBookingModal(false);
-    setSelectedTestId(undefined);
-  };
-
-  if (!appointmentId) return null;
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
@@ -205,8 +169,8 @@ export default function AppointmentDetailsModal({ appointmentId, onClose }: Appo
                 <h3 className="font-medium mb-3">Basic Information</h3>
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
-                    <div className="text-sm opacity-70">Doctor</div>
-                    <div className="font-medium">Dr. {appointment.doctor.username}</div>
+                    <div className="text-sm opacity-70">Patient</div>
+                    <div className="font-medium">{appointment.patient.username}</div>
                   </div>
                   <div>
                     <div className="text-sm opacity-70">Status</div>
@@ -455,26 +419,12 @@ export default function AppointmentDetailsModal({ appointmentId, onClose }: Appo
                     <h3 className="font-medium text-blue-400">Recommended Tests</h3>
                   </div>
                   <div className="space-y-3">
-                    {parseRecommendedTests(appointment.recommendedTests).map((testId: string, index: number) => {
-                      const testName = getTestName(testId);
-                      return (
-                        <div key={testId} className="flex items-center justify-between bg-white/5 border border-white/10 p-4 rounded-lg">
-                          <div className="flex-1">
-                            <div className="font-medium text-sm">{testName}</div>
-                            <div className="text-xs opacity-70 mt-1">Recommended by Dr. {appointment.doctor.username}</div>
-                          </div>
-                          <button
-                            onClick={() => handleBookTest(testId)}
-                            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                          >
-                            Book Test
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-3 text-xs opacity-70">
-                    Click "Book Test" to schedule your recommended medical tests with preferred date and time.
+                    {parseRecommendedTests(appointment.recommendedTests).map((test: string, index: number) => (
+                      <div key={index} className="bg-white/5 border border-white/10 p-3 rounded-lg">
+                        <div className="font-medium text-sm">{test}</div>
+                        <div className="text-xs opacity-70 mt-1">Recommended for {appointment.patient.username}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -508,16 +458,6 @@ export default function AppointmentDetailsModal({ appointmentId, onClose }: Appo
           )}
         </div>
       </div>
-
-      {/* Book Test Modal */}
-      <BookTestModal
-        isOpen={showBookingModal}
-        onClose={() => setShowBookingModal(false)}
-        patientUsername={appointment?.patient?.username || ''}
-        preSelectedTestId={selectedTestId}
-        appointmentId={appointment?.id}
-        onBookingSuccess={handleBookingSuccess}
-      />
     </div>
   );
 }

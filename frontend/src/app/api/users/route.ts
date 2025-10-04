@@ -4,8 +4,8 @@ import { hashPassword } from "@/lib/hash";
 
 export async function GET() {
   const users = await prisma.user.findMany();
-  const result = users.reduce<Record<string, { username: string; passwordHash: string; role: string }>>((acc, u) => {
-    acc[u.username] = { username: u.username, passwordHash: u.passwordHash, role: u.role };
+  const result = users.reduce<Record<string, { id: string; username: string; passwordHash: string; role: string }>>((acc, u) => {
+    acc[u.username] = { id: u.id, username: u.username, passwordHash: u.passwordHash, role: u.role };
     return acc;
   }, {});
   return NextResponse.json(result);

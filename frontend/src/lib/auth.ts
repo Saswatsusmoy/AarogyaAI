@@ -1,6 +1,7 @@
 export type UserRole = "doctor" | "patient";
 
 export type StoredUser = {
+  id: string;
   username: string;
   passwordHash: string;
   role: UserRole;

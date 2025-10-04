@@ -22,6 +22,9 @@ model User {
   // Appointments
   patientAppointments Appointment[] @relation("PatientAppointments")
   doctorAppointments  Appointment[] @relation("DoctorAppointments")
+
+  // Chat History
+  chatHistory ChatHistory[]
 }
 
 enum Role {
@@ -100,6 +103,17 @@ model AppointmentTranscription {
 model MedicalTests {
   TestID   String @id @default(cuid())
   TestName String @unique
+}
+
+model ChatHistory {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   User     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  message   String
+  isUser    Boolean  // true for user messages, false for bot responses
+  createdAt DateTime @default(now())
+
+  @@index([patientId, createdAt])
 }
 
 enum AppointmentStatus {

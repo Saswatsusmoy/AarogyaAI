@@ -45,7 +45,7 @@ AarogyaAI/
 ### Prerequisites
 - Node.js 18+ and npm
 - Python 3.8+ and pip
-- PostgreSQL database
+- NeonDB cloud database (configured via environment variables)
 
 ### Frontend Setup
 ```bash

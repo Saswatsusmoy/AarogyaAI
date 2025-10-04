@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import PatientSettings from "./PatientSettings";
 import PatientAppointments from "./PatientAppointments";
+import PatientTestBookings from "./PatientTestBookings";
 import BookAppointment from "./BookAppointment";
 import AppointmentDetailsModal from "./AppointmentDetails";
 import ChatbotInterface from "./ChatbotInterface";
@@ -21,7 +22,7 @@ export default function PatientDashboard() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [active, setActive] = useState<"home" | "appointments" | "store" | "book" | "chatbot" | "settings">("home");
+  const [active, setActive] = useState<"home" | "appointments" | "store" | "book" | "chatbot" | "settings" | "tests">("home");
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(true);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
@@ -84,6 +85,7 @@ export default function PatientDashboard() {
     () => [
       { key: "home" as const, label: "Home" },
       { key: "appointments" as const, label: "Appointments" },
+      { key: "tests" as const, label: "Test Bookings" },
       { key: "store" as const, label: "Store" },
       { key: "book" as const, label: "Book Appointment" },
       { key: "chatbot" as const, label: "Chatbot (Beta)" },
@@ -188,6 +190,38 @@ export default function PatientDashboard() {
                 </div>
               )}
             </div>
+
+            {/* Quick Actions */}
+            <div className="border border-white/10 rounded p-4">
+              <h3 className="font-medium mb-3">Quick Actions</h3>
+              <div className="grid gap-3 md:grid-cols-2">
+                <button 
+                  onClick={() => setActive("book")}
+                  className="flex items-center gap-3 p-3 border border-white/10 rounded hover:bg-white/5 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-blue-600/20 rounded flex items-center justify-center">
+                    <span className="text-blue-400 text-sm">📅</span>
+                  </div>
+                  <div className="text-left">
+                    <div className="font-medium text-sm">Book Appointment</div>
+                    <div className="text-xs opacity-70">Schedule with a doctor</div>
+                  </div>
+                </button>
+                
+                <button 
+                  onClick={() => setActive("tests")}
+                  className="flex items-center gap-3 p-3 border border-white/10 rounded hover:bg-white/5 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-green-600/20 rounded flex items-center justify-center">
+                    <span className="text-green-400 text-sm">🧪</span>
+                  </div>
+                  <div className="text-left">
+                    <div className="font-medium text-sm">Book Test</div>
+                    <div className="text-xs opacity-70">Schedule medical tests</div>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
         );
       case "appointments":
@@ -227,6 +261,16 @@ export default function PatientDashboard() {
             <div className="border border-white/10 rounded-lg">
               <ChatbotInterface />
             </div>
+          </div>
+        );
+      case "tests":
+        return (
+          <div className="space-y-4">
+            <div className="border border-white/10 rounded p-4">
+              <h2 className="font-medium mb-2">Test Bookings</h2>
+              <p className="text-sm opacity-80">View and manage your recommended medical tests.</p>
+            </div>
+            <PatientTestBookings username={user.username} />
           </div>
         );
       case "settings":

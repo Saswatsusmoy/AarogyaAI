@@ -1,153 +1,238 @@
-# AarogyaAI - Medical AI Assistant
+# AarogyaAI - AI-Powered Healthcare Platform
 
-A comprehensive medical AI platform with speech-to-text transcription and AI-powered medical notes generation.
+Welcome to AarogyaAI, your comprehensive digital healthcare platform that connects patients with doctors through AI-enhanced consultations, medical test bookings, and intelligent health assistance.
 
-## 🏗️ Project Structure
+## 🏥 What is AarogyaAI?
 
-```
-AarogyaAI/
-├── frontend/                 # Next.js frontend application
-│   ├── src/
-│   │   ├── app/             # Next.js app router
-│   │   ├── context/         # React context providers
-│   │   ├── lib/             # Utility libraries
-│   │   └── data/            # Static data
-│   ├── prisma/              # Database schema and migrations
-│   └── public/              # Static assets
-├── backend/                  # Python FastAPI backend
-│   ├── app/
-│   │   ├── main.py          # FastAPI application
-│   │   ├── config.py        # Configuration settings
-│   │   ├── stt_manager.py   # Speech-to-text management
-│   │   └── ai_notes.py      # AI medical notes generation
-│   ├── requirements.txt     # Python dependencies
-│   └── .env                 # Environment variables
-└── .gitignore               # Root-level gitignore
-```
+AarogyaAI is a modern healthcare platform designed to streamline the patient-doctor experience. Whether you're a patient seeking medical care or a doctor managing your practice, AarogyaAI provides the tools you need for efficient, technology-enhanced healthcare delivery.
 
-## 🚀 Features
+## 👥 For Patients
 
-### Frontend (Next.js)
-- **Patient Management**: Patient profiles, appointments, medical history
-- **Doctor Dashboard**: Patient consultations, AI notes, prescription management
+### Getting Started
+
+1. **Create Your Account**
+   - Visit the login page and select "Register"
+   - Choose "Patient" as your role
+   - Create a username and password
+   - You'll be automatically redirected to your patient dashboard
+
+2. **Complete Your Profile**
+   - Navigate to "Settings" in your dashboard
+   - Add your personal information including age, gender, weight, height, phone number
+   - List any allergies or major ailments
+   - This information helps doctors provide better care
+
+### Key Features
+
+#### 📅 **Appointment Management**
+- **Book Appointments**: Select from available doctors and choose your preferred date and time
+- **View Appointments**: See all your upcoming and past appointments
+- **Appointment Details**: Access comprehensive information about each appointment including:
+  - Doctor information
+  - Scheduled date and time
+  - Consultation reason
+  - AI-generated notes and prescriptions
+  - Payment status
+
+#### 💰 **Payment System**
+- **Secure Payments**: Pay consultation fees securely through UPI, cards, or net banking
+- **Payment History**: Track all your payments and transaction details
+- **Automatic Confirmation**: Appointments are automatically confirmed after successful payment
+
+#### 🧪 **Medical Test Booking**
+- **Browse Tests**: Access a comprehensive database of 200+ medical tests
+- **Search Functionality**: Find specific tests using the search feature
+- **Doctor Recommendations**: Book tests recommended by your doctor during consultations
+- **Schedule Tests**: Choose convenient dates and times for your tests
+- **Test History**: View all your booked and completed tests
+
+#### 🤖 **AI Health Assistant (Beta)**
+- **24/7 Support**: Get instant health information and guidance
+- **Appointment Help**: Assistance with booking and managing appointments
+- **General Health Information**: Access reliable health information
+- **Emergency Guidance**: Get appropriate guidance for urgent situations
+
+### Patient Dashboard Navigation
+
+Your dashboard includes six main sections:
+
+1. **Home**: Overview of upcoming appointments and quick actions
+2. **Appointments**: Complete appointment management
+3. **Book Appointment**: Schedule new consultations
+4. **Chatbot**: AI health assistant
+5. **Test Bookings**: Medical test management
+6. **Settings**: Profile and account management
+
+## 👨‍⚕️ For Doctors
+
+### Getting Started
+
+1. **Create Your Account**
+   - Visit the login page and select "Register"
+   - Choose "Doctor" as your role
+   - Create a username and password
+   - You'll be automatically redirected to your doctor dashboard
+
+2. **Complete Your Profile**
+   - Navigate to "Settings" in your dashboard
+   - Add your professional information including:
+     - Name, age, and contact details
+     - Department and specialty
+     - Clinic information (name, address, phone)
+     - Digital signature for prescriptions
+
+### Key Features
+
+#### 📋 **Appointment Management**
+- **View Appointments**: See all patient appointments in one place
+- **Accept/Decline**: Respond to appointment requests
+- **Status Updates**: Track appointment status (Pending, Accepted, Completed, Cancelled)
+- **Patient Details**: Access comprehensive patient information before consultations
+
+#### 👥 **Patient Management**
+- **Patient Profiles**: View detailed patient information including:
+  - Personal details (age, gender, weight, height)
+  - Medical history (allergies, ailments)
+  - Previous consultation notes
+  - Test results and recommendations
+
+#### 🎙️ **AI-Enhanced Consultations**
 - **Speech-to-Text**: Real-time transcription during consultations
-- **AI Notes**: Structured medical notes with markdown formatting
-- **Authentication**: Role-based access (doctors, patients)
+- **AI Notes Generation**: Automatic generation of consultation notes
+- **Smart Prescriptions**: AI-assisted prescription creation
+- **Patient Transcripts**: Access to conversation transcripts for reference
 
-### Backend (FastAPI)
-- **STT Integration**: Cartesia API for speech-to-text
-- **AI Notes Generation**: Cerebras Llama 3.1 8B for medical notes
-- **Structured Output**: Symptoms, Doctor Advice, Medications, Medical Past, Summary
-- **Prescription Data**: JSON format for autofill functionality
+#### 📊 **Payment Tracking**
+- **Payment History**: View all payments received from patients
+- **Financial Reports**: Track earnings and payment statistics
+- **Transaction Details**: Access detailed payment information
 
-## 🛠️ Setup Instructions
+### Doctor Dashboard Navigation
 
-### Prerequisites
-- Node.js 18+ and npm
-- Python 3.8+ and pip
-- NeonDB cloud database (configured via environment variables)
+Your dashboard includes four main sections:
 
-### Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
+1. **Appointments**: Manage all patient appointments
+2. **Patients**: Access patient profiles and history
+3. **Payments**: Track financial transactions
+4. **Settings**: Manage professional profile and preferences
 
-### Backend Setup
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
-```
+### Consultation Workflow
 
-### Environment Variables
+1. **Accept Appointment**: Review and accept patient appointment requests
+2. **Start Consultation**: Click "Start" to begin the consultation with a patient
+3. **Use AI Tools**: Leverage speech-to-text and AI note generation
+4. **Create Prescriptions**: Generate prescriptions with AI assistance
+5. **Complete Appointment**: Mark consultation as completed and redirect to homepage
 
-#### Backend (.env)
-```env
-# LiveKit credentials
-LIVEKIT_URL=wss://your-livekit-url
-LIVEKIT_API_KEY=your-livekit-api-key
-LIVEKIT_API_SECRET=your-livekit-secret
+## 🔧 Technical Features
 
-# Cartesia API
-CARTESIA_API_KEY=your-cartesia-api-key
+### AI Integration
+- **Speech Recognition**: Real-time voice-to-text conversion
+- **Natural Language Processing**: Intelligent note generation
+- **Prescription AI**: Smart medication and treatment suggestions
+- **Health Chatbot**: 24/7 patient support and information
 
-# Cerebras AI
-CEREBRAS_API_KEY=your-cerebras-api-key
-CEREBRAS_BASE_URL=https://api.cerebras.ai/v1
-CEREBRAS_MODEL=llama-3.1-8b-instruct
+### Security & Privacy
+- **Secure Authentication**: Protected user accounts
+- **Data Encryption**: All sensitive information is encrypted
+- **HIPAA Compliance**: Healthcare data protection standards
+- **Secure Payments**: PCI-compliant payment processing
 
-# STT Configuration
-STT_LANGUAGE=en
-STT_MODEL=ink-whisper
-```
+### Database
+- **Comprehensive Medical Tests**: 200+ medical tests available for booking
+- **Patient Records**: Complete medical history tracking
+- **Appointment System**: Full appointment lifecycle management
+- **Payment Tracking**: Complete financial transaction history
 
-#### Frontend (.env.local)
-```env
-NEXT_PUBLIC_STT_BACKEND_URL=http://localhost:8080
-```
+## 📱 How to Use
 
-## 📋 API Endpoints
+### For Patients
 
-### STT Endpoints
-- `POST /stt/session/start` - Start speech-to-text session
-- `POST /stt/session/stop` - Stop STT session
-- `POST /stt/session/stop_and_process` - Stop session and generate AI notes
+1. **Book an Appointment**:
+   - Go to "Book Appointment"
+   - Select your preferred doctor
+   - Choose date and time
+   - Add consultation reason (optional)
+   - Complete payment to confirm
 
-### AI Notes Endpoints
-- `POST /ai/notes` - Generate AI medical notes from transcript
+2. **Manage Tests**:
+   - Visit "Test Bookings"
+   - Browse or search for tests
+   - Book recommended tests from your doctor
+   - Schedule at your convenience
 
-## 🎯 AI Notes Structure
+3. **Get Health Information**:
+   - Use the AI Chatbot for general health questions
+   - Access appointment information
+   - Get guidance on health concerns
 
-The AI generates structured medical notes with 5 sections:
+### For Doctors
 
-1. **SYMPTOMS** - Patient-reported symptoms
-2. **DOCTOR ADVICE** - Medical recommendations and instructions
-3. **MEDICATIONS** - Prescribed medications with dosage
-4. **MEDICAL PAST** - Previous medical history
-5. **SUMMARY** - Concise consultation summary
+1. **Manage Appointments**:
+   - Review pending appointments
+   - Accept or decline requests
+   - Start consultations when ready
+   - Complete appointments after consultation
 
-## 🔧 Development
+2. **Conduct Consultations**:
+   - Access patient profiles
+   - Use speech-to-text for notes
+   - Generate AI-assisted prescriptions
+   - Save consultation details
 
-### Git Workflow
-- Root-level gitignore handles both frontend and backend
-- Backend has specific Python/FastAPI ignores
-- Frontend has Next.js specific ignores
+3. **Track Practice**:
+   - Monitor appointment history
+   - View patient information
+   - Track payment receipts
+   - Manage professional profile
 
-### Code Structure
-- **Frontend**: React components with TypeScript
-- **Backend**: FastAPI with async/await patterns
-- **Database**: Prisma ORM with PostgreSQL
-- **AI Integration**: Cerebras API for medical notes generation
+## 💡 Tips for Best Experience
 
-## 🚀 Deployment
+### For Patients
+- Keep your profile information updated
+- Book appointments in advance for better availability
+- Use the AI chatbot for general health questions
+- Check appointment details before your visit
+- Keep track of recommended tests
 
-### Frontend (Vercel)
-```bash
-npm run build
-vercel --prod
-```
+### For Doctors
+- Complete your professional profile for patient trust
+- Use AI tools during consultations for efficiency
+- Respond to appointment requests promptly
+- Review patient history before consultations
+- Keep consultation notes detailed and accurate
 
-### Backend (Docker)
-```bash
-docker build -t aarogyaai-backend .
-docker run -p 8080:8080 aarogyaai-backend
-```
+## 🆘 Support & Help
 
-## 📝 License
+### Common Issues
+- **Login Problems**: Ensure you're using the correct username and password
+- **Payment Issues**: Check your payment method and try again
+- **Appointment Booking**: Verify doctor availability and time slots
+- **Technical Issues**: Refresh the page or try logging out and back in
 
-This project is licensed under the MIT License.
+### Getting Help
+- Use the AI chatbot for immediate assistance
+- Check your appointment details for specific information
+- Contact support for technical issues
+- Review this guide for step-by-step instructions
 
-## 🤝 Contributing
+## 🔒 Privacy & Security
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+Your health information is protected with industry-standard security measures:
+- All data is encrypted in transit and at rest
+- Access is restricted to authorized users only
+- Regular security audits and updates
+- Compliance with healthcare privacy regulations
 
-## 📞 Support
+## 📞 Emergency Information
 
-For support, email support@aarogyaai.com or create an issue in the repository.
+**Important**: AarogyaAI is not for medical emergencies. If you have a medical emergency:
+- Call emergency services immediately
+- Go to the nearest emergency room
+- Do not rely on this platform for urgent medical situations
+
+For urgent but non-emergency concerns, contact your healthcare provider directly.
+
+---
+
+**Welcome to AarogyaAI - Your AI-powered healthcare companion!** 🏥✨

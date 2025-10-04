@@ -31,7 +31,10 @@ export default function BookAppointment({ patientUsername }: { patientUsername: 
     try {
       const res = await fetch("/api/appointments", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify({ patientUsername, doctorUsername, scheduledAt: datetime ? new Date(datetime).toISOString() : null, reason: reason || null }),
       });
       if (!res.ok) throw new Error("create failed");

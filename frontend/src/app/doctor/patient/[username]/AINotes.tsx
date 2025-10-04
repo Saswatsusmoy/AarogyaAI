@@ -84,10 +84,19 @@ export default function AINotes({
     try {
       const res = await fetch(`${BACKEND_BASE}/ai/notes`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify({ transcript: transcriptBlob }),
       });
-      if (!res.ok) throw new Error("AI notes generation failed");
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const errorMessage = errorData.detail || `AI notes generation failed (${res.status})`;
+        throw new Error(errorMessage);
+      }
+      
       const data = await res.json();
       setNotes(data.notes || "");
 
@@ -101,7 +110,10 @@ export default function AINotes({
         try {
           const putRes = await fetch("/api/appointments", {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              "User-Agent": "AarogyaAI-Frontend/1.0.0",
+            },
             body: JSON.stringify({ id: appointmentId, aiNotes: data.notes || null }),
           });
           if (!putRes.ok) {
@@ -123,7 +135,9 @@ export default function AINotes({
         } catch {}
       }
     } catch (e) {
-      setError("Failed to generate AI notes");
+      const errorMessage = e instanceof Error ? e.message : "Failed to generate AI notes";
+      setError(errorMessage);
+      console.error("AI notes generation error:", e);
     } finally {
       setLoading(false);
     }

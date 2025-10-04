@@ -170,7 +170,10 @@ export default function Prescription({
       
       const res = await fetch("/api/appointments", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify({ 
           id: appointmentId, 
           prescription: JSON.stringify(prescriptionData),
@@ -416,7 +419,10 @@ export default function Prescription({
         const pdfContent = btoa(html);
         await fetch("/api/appointments", {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "User-Agent": "AarogyaAI-Frontend/1.0.0",
+          },
           body: JSON.stringify({ 
             id: appointmentId, 
             prescriptionPdf: pdfContent 

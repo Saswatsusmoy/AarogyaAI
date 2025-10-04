@@ -16,7 +16,10 @@ export async function createUser(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const res = await fetch("/api/users", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      "User-Agent": "AarogyaAI-Frontend/1.0.0",
+    },
     body: JSON.stringify({ username, password, role }),
   });
   if (!res.ok) {
@@ -28,13 +31,19 @@ export async function createUser(
     if (role === "patient") {
       await fetch("/api/patient/profile", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify({ username }),
       });
     } else if (role === "doctor") {
       await fetch("/api/doctor/profile", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify({ username }),
       });
     }
@@ -50,7 +59,10 @@ export async function validateCredentials(
 ): Promise<{ ok: true; user: StoredUser } | { ok: false; error: string }> {
   const res = await fetch("/api/auth", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      "User-Agent": "AarogyaAI-Frontend/1.0.0",
+    },
     body: JSON.stringify({ username, password }),
   });
   if (!res.ok) {

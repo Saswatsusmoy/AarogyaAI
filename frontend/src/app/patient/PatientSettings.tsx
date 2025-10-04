@@ -43,7 +43,10 @@ export default function PatientSettings({ username }: { username: string }) {
     try {
       const res = await fetch("/api/patient/profile", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify({ username, ...profile }),
       });
       if (!res.ok) throw new Error("save failed");

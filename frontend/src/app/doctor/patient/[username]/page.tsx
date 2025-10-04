@@ -60,6 +60,31 @@ export default function DoctorPatientProfile() {
 
   const [sessionBuffer, setSessionBuffer] = useState<string>("");
 
+  // Load existing transcripts for this appointment
+  useEffect(() => {
+    async function loadTranscripts() {
+      if (!appointmentId) return;
+      
+      try {
+        const res = await fetch(`/api/patient/transcriptions?appointmentId=${encodeURIComponent(appointmentId)}`);
+        if (res.ok) {
+          const transcriptData = await res.json();
+          if (Array.isArray(transcriptData)) {
+            const formattedTranscripts = transcriptData.map((t: any) => ({
+              text: t.text,
+              createdAt: t.createdAt
+            }));
+            setTranscripts(formattedTranscripts);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load transcripts:", error);
+      }
+    }
+    
+    loadTranscripts();
+  }, [appointmentId]);
+
   const currentWeight = editMode ? weight : (typeof profile?.weight === "number" ? profile!.weight : null);
   const currentHeight = editMode ? height : (typeof profile?.height === "number" ? profile!.height : null);
   const bmi = useMemo(() => {
@@ -93,7 +118,10 @@ export default function DoctorPatientProfile() {
           // Ensure an empty profile exists, then use empty defaults
           await fetch("/api/patient/profile", {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              "User-Agent": "AarogyaAI-Frontend/1.0.0",
+            },
             body: JSON.stringify({ username }),
           });
           setProfile({});
@@ -137,7 +165,10 @@ export default function DoctorPatientProfile() {
     try {
       const res = await fetch("/api/patient/profile", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify({ username, scribeNotes: notes }),
       });
       if (!res.ok) throw new Error("save failed");
@@ -164,7 +195,10 @@ export default function DoctorPatientProfile() {
       };
       const res = await fetch("/api/patient/profile", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("save failed");
@@ -183,7 +217,10 @@ export default function DoctorPatientProfile() {
       // Save current scribe notes into this appointment and mark completed
       const res = await fetch("/api/appointments", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify({ id: appointmentId, status: "COMPLETED", notes }),
       });
       if (!res.ok) throw new Error("complete failed");
@@ -199,7 +236,10 @@ export default function DoctorPatientProfile() {
     try {
       await fetch("/api/patient/transcriptions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify({ appointmentId, text }),
       });
     } catch {}

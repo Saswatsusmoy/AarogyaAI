@@ -64,7 +64,10 @@ export default function DoctorSettings({ username }: { username: string }) {
     try {
       const res = await fetch("/api/doctor/profile", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify({ 
           username, 
           ...profile,

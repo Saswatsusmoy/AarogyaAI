@@ -24,7 +24,10 @@ export default function SpeechToText({ onStart, onFinal, onPartial, onStop }:{ o
     }
     if (!listening) {
       try {
-        const res = await fetch(`${BACKEND_BASE}/stt/session/start`, { method: "POST" });
+        const res = await fetch(`${BACKEND_BASE}/stt/session/start`, { 
+          method: "POST",
+          headers: { "User-Agent": "AarogyaAI-Frontend/1.0.0" }
+        });
         if (!res.ok) throw new Error("failed to start stt session");
         const data = await res.json();
         setSessionId(data.session_id);
@@ -62,7 +65,10 @@ export default function SpeechToText({ onStart, onFinal, onPartial, onStop }:{ o
       if (sessionId) {
         fetch(`${BACKEND_BASE}/stt/session/stop`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "User-Agent": "AarogyaAI-Frontend/1.0.0"
+          },
           body: JSON.stringify({ session_id: sessionId }),
         }).catch(() => {});
         setSessionId(null);

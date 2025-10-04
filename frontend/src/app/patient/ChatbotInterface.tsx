@@ -50,6 +50,7 @@ export default function ChatbotInterface() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
         },
         body: JSON.stringify({
           message: userMessage.content,

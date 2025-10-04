@@ -68,7 +68,10 @@ export default function BookTestModal({
     try {
       const res = await fetch("/api/test-bookings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify({
           testId: selectedTestId,
           appointmentId: appointmentId || null,

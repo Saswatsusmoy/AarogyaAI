@@ -58,7 +58,10 @@ export default function DoctorAppointments({ username }: { username: string }) {
     try {
       await fetch("/api/appointments", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
         body: JSON.stringify({ id, status }),
       });
       fetchList();

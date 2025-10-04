@@ -224,6 +224,9 @@ export default function DoctorPatientProfile() {
         body: JSON.stringify({ id: appointmentId, status: "COMPLETED", notes }),
       });
       if (!res.ok) throw new Error("complete failed");
+      
+      // Redirect to homepage after successful completion
+      router.push("/");
     } catch {
       setError("Failed to complete appointment");
     } finally {

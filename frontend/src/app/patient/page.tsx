@@ -22,7 +22,7 @@ export default function PatientDashboard() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [active, setActive] = useState<"home" | "appointments" | "store" | "book" | "chatbot" | "settings" | "tests">("home");
+  const [active, setActive] = useState<"home" | "appointments" | "book" | "chatbot" | "settings" | "tests">("home");
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(true);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
@@ -86,7 +86,6 @@ export default function PatientDashboard() {
       { key: "home" as const, label: "Home" },
       { key: "appointments" as const, label: "Appointments" },
       { key: "tests" as const, label: "Test Bookings" },
-      { key: "store" as const, label: "Store" },
       { key: "book" as const, label: "Book Appointment" },
       { key: "chatbot" as const, label: "Chatbot (Beta)" },
       { key: "settings" as const, label: "Settings" },
@@ -232,13 +231,6 @@ export default function PatientDashboard() {
               <p className="text-sm opacity-80">Your appointments list.</p>
             </div>
             <PatientAppointments username={user.username} onRefresh={fetchAppointments} onAppointmentClick={setSelectedAppointmentId} />
-          </div>
-        );
-      case "store":
-        return (
-          <div className="border border-white/10 rounded p-4">
-            <h2 className="font-medium mb-2">Store</h2>
-            <p className="text-sm opacity-80">Browse health products and services.</p>
           </div>
         );
       case "book":

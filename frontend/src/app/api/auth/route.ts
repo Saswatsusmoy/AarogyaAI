@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   if (user.passwordHash !== hashPassword(password)) {
     return NextResponse.json({ error: "Invalid password" }, { status: 401 });
   }
-  return NextResponse.json({ ok: true, user: { username: user.username, passwordHash: user.passwordHash, role: user.role } });
+  return NextResponse.json({ ok: true, user: { id: user.id, username: user.username, passwordHash: user.passwordHash, role: user.role } });
 }
 
 

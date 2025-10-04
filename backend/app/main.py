@@ -6,6 +6,8 @@ import uuid
 from .config import validate_settings, settings
 from .stt_manager import stt_manager
 from .ai_notes import generate_notes_and_prescription
+from .patient_chatbot import generate_chatbot_response
+from .chat_history import chat_history_service
 
 
 class StartResponse(BaseModel):
@@ -65,6 +67,19 @@ class NotesResponse(BaseModel):
     prescription: dict
 
 
+class ChatbotPayload(BaseModel):
+    patient_id: str
+    message: str
+
+
+class ChatbotResponse(BaseModel):
+    response: str
+
+
+class ChatHistoryResponse(BaseModel):
+    messages: list
+
+
 @app.post("/ai/notes", response_model=NotesResponse)
 async def generate_ai_notes(payload: TranscriptPayload) -> NotesResponse:
     try:
@@ -87,6 +102,71 @@ async def generate_ai_notes(payload: TranscriptPayload) -> NotesResponse:
         raise
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"AI generation failed: {e}")
+
+
+@app.post("/ai/chatbot", response_model=ChatbotResponse)
+async def intelligent_chatbot(payload: ChatbotPayload) -> ChatbotResponse:
+    """Intelligent chatbot endpoint that uses patient data and Cerebras AI."""
+    try:
+        # Validate Cerebras configuration
+        if not settings.cerebras_api_key:
+            raise HTTPException(status_code=500, detail="Cerebras AI not configured")
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if not payload.patient_id or not payload.patient_id.strip():
+        raise HTTPException(status_code=400, detail="Patient ID is required")
+    
+    if not payload.message or not payload.message.strip():
+        raise HTTPException(status_code=400, detail="Message is required")
+
+    patient_id = payload.patient_id.strip()
+    user_message = payload.message.strip()
+
+    try:
+        # Save user message to chat history
+        await chat_history_service.save_message(patient_id, user_message, is_user=True)
+        
+        # Generate chatbot response
+        response = await generate_chatbot_response(patient_id, user_message)
+        
+        # Save bot response to chat history
+        await chat_history_service.save_message(patient_id, response, is_user=False)
+        
+        return ChatbotResponse(response=response)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Chatbot generation failed: {e}")
+
+
+@app.get("/ai/chatbot/history/{patient_id}", response_model=ChatHistoryResponse)
+async def get_chat_history(patient_id: str, limit: int = 50) -> ChatHistoryResponse:
+    """Get chat history for a patient."""
+    if not patient_id or not patient_id.strip():
+        raise HTTPException(status_code=400, detail="Patient ID is required")
+    
+    try:
+        messages = await chat_history_service.get_chat_history(patient_id.strip(), limit)
+        return ChatHistoryResponse(messages=messages)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve chat history: {e}")
+
+
+@app.delete("/ai/chatbot/history/{patient_id}")
+async def clear_chat_history(patient_id: str):
+    """Clear chat history for a patient."""
+    if not patient_id or not patient_id.strip():
+        raise HTTPException(status_code=400, detail="Patient ID is required")
+    
+    try:
+        success = await chat_history_service.clear_chat_history(patient_id.strip())
+        if success:
+            return {"message": "Chat history cleared successfully"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to clear chat history")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to clear chat history: {e}")
 
 
 class StopAndProcessRequest(BaseModel):

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import ReactMarkdown from "react-markdown";
 
 type Message = {
   id: string;
@@ -10,16 +12,11 @@ type Message = {
 };
 
 export default function ChatbotInterface() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content: "Hello! I'm AarogyaAI Assistant, your healthcare companion. How can I help you today?",
-      isUser: false,
-      timestamp: new Date(),
-    },
-  ]);
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -29,6 +26,70 @@ export default function ChatbotInterface() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Load chat history on component mount
+  useEffect(() => {
+    const loadChatHistory = async () => {
+      if (!user?.id) {
+        setIsLoadingHistory(false);
+        return;
+      }
+
+      try {
+        const BACKEND_BASE = process.env.NEXT_PUBLIC_STT_BACKEND_URL || "http://localhost:8080";
+        const response = await fetch(`${BACKEND_BASE}/ai/chatbot/history/${user.id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": "AarogyaAI-Frontend/1.0.0",
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const historyMessages: Message[] = data.messages.map((msg: any) => ({
+            id: msg.id,
+            content: msg.message,
+            isUser: msg.is_user,
+            timestamp: new Date(msg.created_at),
+          }));
+
+          // If no history, show welcome message
+          if (historyMessages.length === 0) {
+            setMessages([{
+              id: "welcome",
+              content: "Hello! I'm AarogyaAI Assistant, your intelligent healthcare companion. I have access to your medical history and can provide personalized health guidance. How can I help you today?",
+              isUser: false,
+              timestamp: new Date(),
+            }]);
+          } else {
+            setMessages(historyMessages);
+          }
+        } else {
+          // Fallback to welcome message if history loading fails
+          setMessages([{
+            id: "welcome",
+            content: "Hello! I'm AarogyaAI Assistant, your intelligent healthcare companion. I have access to your medical history and can provide personalized health guidance. How can I help you today?",
+            isUser: false,
+            timestamp: new Date(),
+          }]);
+        }
+      } catch (error) {
+        console.error("Error loading chat history:", error);
+        // Fallback to welcome message
+        setMessages([{
+          id: "welcome",
+          content: "Hello! I'm AarogyaAI Assistant, your intelligent healthcare companion. I have access to your medical history and can provide personalized health guidance. How can I help you today?",
+          isUser: false,
+          timestamp: new Date(),
+        }]);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+
+    loadChatHistory();
+  }, [user?.id]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -45,14 +106,21 @@ export default function ChatbotInterface() {
     setIsLoading(true);
 
     try {
-      // Simulate API call to chatbot backend
-      const response = await fetch("/api/chatbot", {
+      // Use intelligent chatbot backend with patient data
+      const BACKEND_BASE = process.env.NEXT_PUBLIC_STT_BACKEND_URL || "http://localhost:8080";
+      
+      if (!user?.id) {
+        throw new Error("User not authenticated");
+      }
+
+      const response = await fetch(`${BACKEND_BASE}/ai/chatbot`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "User-Agent": "AarogyaAI-Frontend/1.0.0",
         },
         body: JSON.stringify({
+          patient_id: user.id,
           message: userMessage.content,
         }),
       });
@@ -63,7 +131,7 @@ export default function ChatbotInterface() {
         const data = await response.json();
         botResponse = data.response || "I'm sorry, I couldn't process your request at the moment.";
       } else {
-        // Fallback responses for common health-related queries
+        // Fallback to rule-based responses if intelligent backend fails
         botResponse = generateFallbackResponse(userMessage.content);
       }
 
@@ -127,15 +195,34 @@ export default function ChatbotInterface() {
     }
   };
 
-  const clearChat = () => {
-    setMessages([
-      {
-        id: "1",
-        content: "Hello! I'm AarogyaAI Assistant, your healthcare companion. How can I help you today?",
-        isUser: false,
-        timestamp: new Date(),
-      },
-    ]);
+  const clearChat = async () => {
+    if (!user?.id) return;
+
+    try {
+      const BACKEND_BASE = process.env.NEXT_PUBLIC_STT_BACKEND_URL || "http://localhost:8080";
+      const response = await fetch(`${BACKEND_BASE}/ai/chatbot/history/${user.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": "AarogyaAI-Frontend/1.0.0",
+        },
+      });
+
+      if (response.ok) {
+        setMessages([
+          {
+            id: "welcome",
+            content: "Hello! I'm AarogyaAI Assistant, your intelligent healthcare companion. I have access to your medical history and can provide personalized health guidance. How can I help you today?",
+            isUser: false,
+            timestamp: new Date(),
+          },
+        ]);
+      } else {
+        console.error("Failed to clear chat history");
+      }
+    } catch (error) {
+      console.error("Error clearing chat history:", error);
+    }
   };
 
   return (
@@ -158,7 +245,19 @@ export default function ChatbotInterface() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
+        {isLoadingHistory ? (
+          <div className="flex justify-center items-center h-full">
+            <div className="flex items-center space-x-2">
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              </div>
+              <span className="text-sm opacity-70">Loading chat history...</span>
+            </div>
+          </div>
+        ) : (
+          messages.map((message) => (
           <div
             key={message.id}
             className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}
@@ -170,7 +269,27 @@ export default function ChatbotInterface() {
                   : "bg-white/10 text-white"
               }`}
             >
-              <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+              <div className="text-sm">
+                {message.isUser ? (
+                  <div className="whitespace-pre-wrap">{message.content}</div>
+                ) : (
+                  <div className="prose prose-invert prose-sm max-w-none">
+                    <ReactMarkdown 
+                      components={{
+                        p: ({children}) => <p className="mb-2 last:mb-0 text-white">{children}</p>,
+                        strong: ({children}) => <strong className="font-semibold text-blue-300">{children}</strong>,
+                        em: ({children}) => <em className="italic text-yellow-300">{children}</em>,
+                        code: ({children}) => <code className="bg-white/20 px-1 py-0.5 rounded text-xs font-mono text-white">{children}</code>,
+                        ul: ({children}) => <ul className="list-disc list-inside mb-2 space-y-1 text-white">{children}</ul>,
+                        ol: ({children}) => <ol className="list-decimal list-inside mb-2 space-y-1 text-white">{children}</ol>,
+                        li: ({children}) => <li className="text-sm text-white">{children}</li>,
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
+                )}
+              </div>
               <div className="text-xs opacity-60 mt-1">
                 {message.timestamp.toLocaleTimeString([], { 
                   hour: '2-digit', 
@@ -179,7 +298,8 @@ export default function ChatbotInterface() {
               </div>
             </div>
           </div>
-        ))}
+          ))
+        )}
         
         {isLoading && (
           <div className="flex justify-start">
@@ -220,7 +340,7 @@ export default function ChatbotInterface() {
           </button>
         </div>
         <div className="text-xs opacity-60 mt-2">
-          💡 Tip: Ask about symptoms, appointments, medications, or general health questions
+          💡 Tip: Ask about your symptoms, appointments, medications, medical history, or general health questions. I have access to your complete medical profile for personalized responses.
         </div>
       </div>
     </div>

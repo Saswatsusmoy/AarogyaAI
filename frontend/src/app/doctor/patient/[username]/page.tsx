@@ -356,6 +356,20 @@ export default function DoctorPatientProfile() {
           setSessionBuffer("");
           setPartial("");
         }}
+        onMeetTranscription={async (text) => {
+          // Handle Meet transcriptions - add them directly to transcripts
+          console.log("[Doctor Page] ===== Received Meet transcription =====");
+          console.log("[Doctor Page] Text:", text);
+          console.log("[Doctor Page] Current transcripts count:", transcripts.length);
+          
+          await persistSessionTranscript(text);
+          
+          setTranscripts((prev) => {
+            const updated = [...prev, { text }];
+            console.log("[Doctor Page] Updated transcripts count:", updated.length);
+            return updated;
+          });
+        }}
       />
       <Transcripts items={transcripts} partial={partial} />
       <AINotes 

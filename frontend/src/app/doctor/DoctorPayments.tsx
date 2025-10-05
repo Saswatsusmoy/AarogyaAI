@@ -68,17 +68,36 @@ export default function DoctorPayments({ username }: DoctorPaymentsProps) {
 
   const fetchPayments = async () => {
     try {
-      // First get the doctor's user ID
-      const userRes = await fetch(`/api/users?username=${encodeURIComponent(username)}`);
-      if (!userRes.ok) throw new Error("Failed to fetch user");
-      const user = await userRes.json();
-
-      const BACKEND_BASE = process.env.NEXT_PUBLIC_STT_BACKEND_URL || "http://localhost:8080";
-      const response = await fetch(`${BACKEND_BASE}/payment/logs/${user.id}?limit=50`);
+      // Fetch appointments for this doctor
+      const response = await fetch(`/api/appointments?username=${encodeURIComponent(username)}&role=doctor`);
       
-      if (!response.ok) throw new Error("Failed to fetch payments");
-      const data = await response.json();
-      setPayments(data.payments || []);
+      if (!response.ok) throw new Error("Failed to fetch appointments");
+      const appointments = await response.json();
+      
+      // Convert appointments to payment format with fixed consultation fee
+      const paymentData = appointments.map((appointment: any) => ({
+        id: appointment.id,
+        appointmentId: appointment.id,
+        patientId: appointment.patientId,
+        doctorId: appointment.doctorId,
+        amount: 500, // Fixed consultation fee
+        currency: "INR",
+        status: appointment.status === "ACCEPTED" ? "COMPLETED" : 
+                appointment.status === "PENDING" ? "PENDING" : "FAILED",
+        method: "UPI",
+        transactionId: `TXN_${appointment.id.slice(-8)}`,
+        upiId: "saswatsusmoy@upi",
+        paidAt: appointment.status === "ACCEPTED" ? appointment.updatedAt : null,
+        createdAt: appointment.createdAt,
+        updatedAt: appointment.updatedAt,
+        patient_username: appointment.patient.username,
+        doctor_username: appointment.doctor.username,
+        appointment_date: appointment.scheduledAt,
+        appointment_reason: appointment.reason || "Consultation",
+        logs: [] // No logs for simplified version
+      }));
+      
+      setPayments(paymentData);
     } catch (err) {
       setError("Failed to load payments");
       console.error("Error fetching payments:", err);
@@ -89,17 +108,27 @@ export default function DoctorPayments({ username }: DoctorPaymentsProps) {
 
   const fetchStats = async () => {
     try {
-      // First get the doctor's user ID
-      const userRes = await fetch(`/api/users?username=${encodeURIComponent(username)}`);
-      if (!userRes.ok) throw new Error("Failed to fetch user");
-      const user = await userRes.json();
-
-      const BACKEND_BASE = process.env.NEXT_PUBLIC_STT_BACKEND_URL || "http://localhost:8080";
-      const response = await fetch(`${BACKEND_BASE}/payment/stats/${user.id}`);
+      // Fetch appointments for this doctor
+      const response = await fetch(`/api/appointments?username=${encodeURIComponent(username)}&role=doctor`);
       
-      if (!response.ok) throw new Error("Failed to fetch stats");
-      const data = await response.json();
-      setStats(data.statistics || {});
+      if (!response.ok) throw new Error("Failed to fetch appointments");
+      const appointments = await response.json();
+      
+      // Calculate statistics from appointments
+      const totalAppointments = appointments.length;
+      const acceptedAppointments = appointments.filter((apt: any) => apt.status === "ACCEPTED");
+      const totalAmount = acceptedAppointments.length * 500; // 500 per consultation
+      const averageAmount = totalAppointments > 0 ? totalAmount / totalAppointments : 0;
+      
+      const statsData = {
+        total_payments: totalAppointments,
+        total_amount: totalAmount,
+        successful_payments: acceptedAppointments.length,
+        failed_payments: appointments.filter((apt: any) => apt.status === "DECLINED").length,
+        average_amount: averageAmount
+      };
+      
+      setStats(statsData);
     } catch (err) {
       console.error("Error fetching stats:", err);
     }

@@ -10,6 +10,7 @@ from .ai_notes import generate_notes_and_prescription
 from .patient_chatbot import generate_chatbot_response
 from .chat_history import chat_history_service
 from .payment_service import payment_service, PaymentRequest
+from .meet_transcriber import meet_transcriber_manager, MeetTranscriptionRequest
 
 
 class StartResponse(BaseModel):
@@ -238,3 +239,135 @@ async def stop_and_process(payload: StopAndProcessRequest) -> NotesResponse:
         return NotesResponse(notes=notes, prescription=prescription)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"AI generation failed: {e}")
+
+
+# Meet Transcription Bot Endpoints
+
+class MeetTranscriptionResponse(BaseModel):
+    session_id: str
+    status: str
+
+
+class MeetTranscriptionStatus(BaseModel):
+    session_id: str
+    is_running: bool
+    meet_url: str
+    appointment_id: Optional[str] = None
+
+
+class MeetTranscriptionData(BaseModel):
+    session_id: str
+    transcriptions: list
+
+
+@app.post("/meet/transcription/start", response_model=MeetTranscriptionResponse)
+async def start_meet_transcription(payload: MeetTranscriptionRequest) -> MeetTranscriptionResponse:
+    """Start Google Meet transcription"""
+    try:
+        session_id = await meet_transcriber_manager.create_session(
+            payload.meet_url, payload.appointment_id
+        )
+        return MeetTranscriptionResponse(session_id=session_id, status="started")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start Meet transcription: {e}")
+
+
+@app.post("/meet/transcription/stop", response_model=MeetTranscriptionResponse)
+async def stop_meet_transcription(payload: StopRequest) -> MeetTranscriptionResponse:
+    """Stop Google Meet transcription"""
+    try:
+        success = await meet_transcriber_manager.stop_session(payload.session_id)
+        if success:
+            return MeetTranscriptionResponse(session_id=payload.session_id, status="stopped")
+        else:
+            raise HTTPException(status_code=404, detail="Session not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to stop Meet transcription: {e}")
+
+
+@app.get("/meet/transcription/status/{session_id}", response_model=MeetTranscriptionStatus)
+async def get_meet_transcription_status(session_id: str) -> MeetTranscriptionStatus:
+    """Get Meet transcription status"""
+    session = meet_transcriber_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    return MeetTranscriptionStatus(
+        session_id=session_id,
+        is_running=session.is_running,
+        meet_url=session.meet_url,
+        appointment_id=session.appointment_id
+    )
+
+
+@app.get("/meet/transcription/data/{session_id}", response_model=MeetTranscriptionData)
+async def get_meet_transcription_data(session_id: str) -> MeetTranscriptionData:
+    """Get Meet transcription data"""
+    session = meet_transcriber_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    # Get transcriptions from the session
+    transcriptions = session.get_transcriptions()
+    
+    return MeetTranscriptionData(
+        session_id=session_id,
+        transcriptions=transcriptions
+    )
+
+
+class AudioChunk(BaseModel):
+    audio: str  # Base64 encoded audio
+
+
+class TranscriptionText(BaseModel):
+    text: str
+
+
+@app.post("/meet/transcription/{session_id}")
+async def receive_meet_transcription(session_id: str, payload: TranscriptionText):
+    """Receive transcription text from frontend"""
+    import time
+    
+    session = meet_transcriber_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    try:
+        # Store the transcription
+        current_time = time.time()
+        transcription = {
+            "text": payload.text,
+            "timestamp": current_time
+        }
+        session.transcriptions.append(transcription)
+        
+        # Call callback if set
+        if session.transcription_callback:
+            session.transcription_callback(payload.text)
+        
+        return {"status": "ok", "text": payload.text, "timestamp": current_time}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to store transcription: {e}")
+
+
+@app.post("/meet/audio/{session_id}")
+async def receive_meet_audio(session_id: str, payload: AudioChunk):
+    """Receive audio chunks from frontend and process them"""
+    import base64
+    import asyncio
+    
+    session = meet_transcriber_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    try:
+        # Decode base64 audio
+        audio_data = base64.b64decode(payload.audio)
+        
+        # Process audio chunk
+        await session.process_audio_chunk(audio_data)
+        
+        return {"status": "ok", "bytes_received": len(audio_data)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process audio: {e}")

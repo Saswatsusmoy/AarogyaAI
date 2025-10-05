@@ -33,6 +33,7 @@ AarogyaAI is a modern healthcare platform designed to streamline the patient-doc
   - Consultation reason
   - AI-generated notes and prescriptions
   - Payment status
+  - Video consultation links for accepted appointments
 
 #### 💰 **Payment System**
 - **Secure Payments**: Pay consultation fees securely through UPI, cards, or net banking
@@ -101,6 +102,7 @@ Your dashboard includes six main sections:
 - **AI Notes Generation**: Automatic generation of consultation notes
 - **Smart Prescriptions**: AI-assisted prescription creation
 - **Patient Transcripts**: Access to conversation transcripts for reference
+- **Video Consultations**: Integrated Google Meet for face-to-face consultations
 
 #### 📊 **Payment Tracking**
 - **Payment History**: View all payments received from patients
@@ -119,7 +121,9 @@ Your dashboard includes four main sections:
 ### Consultation Workflow
 
 1. **Accept Appointment**: Review and accept patient appointment requests
-2. **Start Consultation**: Click "Start" to begin the consultation with a patient
+2. **Start Consultation**:
+   - Click "Start Audio" to begin speech-to-text transcription
+   - Click "Start Video" to access Google Meet link for video consultation
 3. **Use AI Tools**: Leverage speech-to-text and AI note generation
 4. **Create Prescriptions**: Generate prescriptions with AI assistance
 5. **Complete Appointment**: Mark consultation as completed and redirect to homepage
@@ -131,6 +135,7 @@ Your dashboard includes four main sections:
 - **Natural Language Processing**: Intelligent note generation
 - **Prescription AI**: Smart medication and treatment suggestions
 - **Health Chatbot**: 24/7 patient support and information
+- **Video Integration**: Google Meet for seamless video consultations
 
 ### Security & Privacy
 - **Secure Authentication**: Protected user accounts
@@ -155,13 +160,19 @@ Your dashboard includes four main sections:
    - Add consultation reason (optional)
    - Complete payment to confirm
 
-2. **Manage Tests**:
+2. **Join Video Consultation**:
+   - Once your appointment is accepted, view appointment details
+   - Click the Google Meet link to join your video consultation
+   - Ensure you have a stable internet connection
+   - Test your camera and microphone before the appointment
+
+3. **Manage Tests**:
    - Visit "Test Bookings"
    - Browse or search for tests
    - Book recommended tests from your doctor
    - Schedule at your convenience
 
-3. **Get Health Information**:
+4. **Get Health Information**:
    - Use the AI Chatbot for general health questions
    - Access appointment information
    - Get guidance on health concerns
@@ -177,6 +188,7 @@ Your dashboard includes four main sections:
 2. **Conduct Consultations**:
    - Access patient profiles
    - Use speech-to-text for notes
+   - Start video consultations via Google Meet
    - Generate AI-assisted prescriptions
    - Save consultation details
 
@@ -194,6 +206,8 @@ Your dashboard includes four main sections:
 - Use the AI chatbot for general health questions
 - Check appointment details before your visit
 - Keep track of recommended tests
+- Test your video and audio setup before video consultations
+- Ensure stable internet connection for video calls
 
 ### For Doctors
 - Complete your professional profile for patient trust
@@ -201,6 +215,8 @@ Your dashboard includes four main sections:
 - Respond to appointment requests promptly
 - Review patient history before consultations
 - Keep consultation notes detailed and accurate
+- Share Google Meet links with patients for video consultations
+- Ensure good lighting and audio quality for video calls
 
 ## 🆘 Support & Help
 
@@ -208,6 +224,7 @@ Your dashboard includes four main sections:
 - **Login Problems**: Ensure you're using the correct username and password
 - **Payment Issues**: Check your payment method and try again
 - **Appointment Booking**: Verify doctor availability and time slots
+- **Video Consultation Issues**: Check your internet connection and browser compatibility
 - **Technical Issues**: Refresh the page or try logging out and back in
 
 ### Getting Help

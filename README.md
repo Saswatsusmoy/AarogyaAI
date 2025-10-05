@@ -2,7 +2,7 @@
 
 Welcome to **AarogyaAI**, an open-source, AI-powered healthcare platform designed to bridge the gap between healthcare providers and patients in remote and underserved areas. This comprehensive digital healthcare solution enables telemedicine, remote diagnosis, and AI-enhanced consultations through cutting-edge technology.
 
-![AarogyaAI Login](images/Screenshot%202025-10-05%20at%203.59.43%20PM.png)
+![AarogyaAI Login](images/Screenshot-2025-10-05-at-3.59.43-PM.png)
 *Secure login interface for patients and doctors*
 
 ## 🎯 Platform Overview
@@ -13,14 +13,14 @@ AarogyaAI provides a complete healthcare ecosystem with separate dashboards for 
 
 | Feature | Description | Screenshot |
 |---------|-------------|------------|
-| **Secure Authentication** | Role-based login for patients and doctors | ![Login Interface](images/Screenshot%202025-10-05%20at%203.59.43%20PM.png) |
-| **Patient Dashboard** | Comprehensive patient portal with appointments and health management | ![Patient Dashboard](images/Screenshot%202025-10-05%20at%204.08.35%20PM.png) |
-| **Doctor Dashboard** | Professional interface for healthcare providers | ![Doctor Dashboard](images/Screenshot%202025-10-05%20at%204.00.46%20PM.png) |
-| **AI Health Assistant** | 24/7 AI-powered health guidance and support | ![AI Assistant](images/Screenshot%202025-10-05%20at%204.08.23%20PM.png) |
-| **Real-time Transcription** | Live conversation transcription during consultations | ![Transcription](images/Screenshot%202025-10-05%20at%204.08.15%20PM.png) |
-| **Digital Prescriptions** | AI-assisted prescription creation and management | ![Prescriptions](images/Screenshot%202025-10-05%20at%204.05.53%20PM.png) |
-| **Payment Processing** | Secure UPI and card payment integration | ![Payments](images/Screenshot%202025-10-05%20at%204.02.13%20PM.png) |
-| **Medical Test Booking** | Comprehensive test database with booking system | ![Test Booking](images/Screenshot%202025-10-05%20at%204.02.33%20PM.png) |
+| **Secure Authentication** | Role-based login for patients and doctors | ![Login Interface](images/Screenshot-2025-10-05-at-3.59.43-PM.png) |
+| **Patient Dashboard** | Comprehensive patient portal with appointments and health management | ![Patient Dashboard](images/Screenshot-2025-10-05-at-4.08.35-PM.png) |
+| **Doctor Dashboard** | Professional interface for healthcare providers | ![Doctor Dashboard](images/Screenshot-2025-10-05-at-4.00.46-PM.png) |
+| **AI Health Assistant** | 24/7 AI-powered health guidance and support | ![AI Assistant](images/Screenshot-2025-10-05-at-4.08.23-PM.png) |
+| **Real-time Transcription** | Live conversation transcription during consultations | ![Transcription](images/Screenshot-2025-10-05-at-4.08.15-PM.png) |
+| **Digital Prescriptions** | AI-assisted prescription creation and management | ![Prescriptions](images/Screenshot-2025-10-05-at-4.05.53-PM.png) |
+| **Payment Processing** | Secure UPI and card payment integration | ![Payments](images/Screenshot-2025-10-05-at-4.02.13-PM.png) |
+| **Medical Test Booking** | Comprehensive test database with booking system | ![Test Booking](images/Screenshot-2025-10-05-at-4.02.33-PM.png) |
 
 ## 🌍 Open Source for Global Healthcare Access
 
@@ -38,7 +38,7 @@ AarogyaAI is built with the vision of making quality healthcare accessible to ev
 
 ### Patient Dashboard Overview
 
-![Patient Dashboard Home](images/Screenshot%202025-10-05%20at%204.08.35%20PM.png)
+![Patient Dashboard Home](images/Screenshot-2025-10-05-at-4.08.35-PM.png)
 *Patient dashboard with upcoming appointments and quick actions*
 
 The patient dashboard provides a comprehensive view of your healthcare journey, including upcoming appointments, test bookings, and AI-powered health assistance.
@@ -61,10 +61,10 @@ The patient dashboard provides a comprehensive view of your healthcare journey, 
 
 #### 📅 **Appointment Management**
 
-![Book Appointment](images/Screenshot%202025-10-05%20at%204.01.10%20PM.png)
+![Book Appointment](images/Screenshot-2025-10-05-at-4.01.10-PM.png)
 *Easy appointment booking with doctor selection and scheduling*
 
-![Patient Appointments](images/Screenshot%202025-10-05%20at%204.00.59%20PM.png)
+![Patient Appointments](images/Screenshot-2025-10-05-at-4.00.59-PM.png)
 *View all your appointments with status tracking*
 
 - **Book Appointments**: Select from available doctors and choose your preferred date and time
@@ -77,12 +77,12 @@ The patient dashboard provides a comprehensive view of your healthcare journey, 
   - Payment status
   - Video consultation links for accepted appointments
 
-![Appointment Details](images/Screenshot%202025-10-05%20at%204.07.05%20PM.png)
+![Appointment Details](images/Screenshot-2025-10-05-at-4.07.05-PM.png)
 *Detailed appointment view with video consultation and payment information*
 
 #### 💰 **Payment System**
 
-![Payment Modal](images/Screenshot%202025-10-05%20at%204.02.13%20PM.png)
+![Payment Modal](images/Screenshot-2025-10-05-at-4.02.13-PM.png)
 *Secure UPI payment interface with QR code scanning*
 
 - **Secure Payments**: Pay consultation fees securely through UPI, cards, or net banking
@@ -91,7 +91,7 @@ The patient dashboard provides a comprehensive view of your healthcare journey, 
 
 #### 🧪 **Medical Test Booking**
 
-![Medical Test Booking](images/Screenshot%202025-10-05%20at%204.02.33%20PM.png)
+![Medical Test Booking](images/Screenshot-2025-10-05-at-4.02.33-PM.png)
 *Comprehensive medical test booking interface with search functionality*
 
 - **Browse Tests**: Access a comprehensive database of 200+ medical tests
@@ -102,7 +102,7 @@ The patient dashboard provides a comprehensive view of your healthcare journey, 
 
 #### 🤖 **AI Health Assistant (Beta)**
 
-![AI Health Assistant](images/Screenshot%202025-10-05%20at%204.08.23%20PM.png)
+![AI Health Assistant](images/Screenshot-2025-10-05-at-4.08.23-PM.png)
 *AI-powered health assistant with personalized medical guidance*
 
 - **24/7 Support**: Get instant health information and guidance
@@ -132,7 +132,7 @@ Your dashboard includes six main sections:
 
 ### Doctor Dashboard Overview
 
-![Doctor Dashboard - Patients](images/Screenshot%202025-10-05%20at%204.00.46%20PM.png)
+![Doctor Dashboard - Patients](images/Screenshot-2025-10-05-at-4.00.46-PM.png)
 *Doctor dashboard with patient management interface*
 
 The doctor dashboard provides comprehensive tools for managing patients, appointments, payments, and conducting AI-enhanced consultations.
@@ -153,14 +153,14 @@ The doctor dashboard provides comprehensive tools for managing patients, appoint
      - Clinic information (name, address, phone)
      - Digital signature for prescriptions
 
-![Doctor Settings](images/Screenshot%202025-10-05%20at%204.01.27%20PM.png)
+![Doctor Settings](images/Screenshot-2025-10-05-at-4.01.27-PM.png)
 *Doctor profile and clinic settings configuration*
 
 ### Key Features
 
 #### 📋 **Appointment Management**
 
-![Doctor Appointments](images/Screenshot%202025-10-05%20at%204.05.00%20PM.png)
+![Doctor Appointments](images/Screenshot-2025-10-05-at-4.05.00-PM.png)
 *Doctor appointment management with patient details and status tracking*
 
 - **View Appointments**: See all patient appointments in one place
@@ -188,7 +188,7 @@ The doctor dashboard provides comprehensive tools for managing patients, appoint
 
 #### 📊 **Payment Tracking**
 
-![Doctor Payments](images/Screenshot%202025-10-05%20at%204.00.46%20PM.png)
+![Doctor Payments](images/Screenshot-2025-10-05-at-4.00.46-PM.png)
 *Comprehensive payment tracking with financial statistics and transaction history*
 
 - **Payment History**: View all payments received from patients
@@ -206,7 +206,7 @@ Your dashboard includes four main sections:
 
 ### Consultation Workflow
 
-![Patient Consultation Interface](images/Screenshot%202025-10-05%20at%204.07.36%20PM.png)
+![Patient Consultation Interface](images/Screenshot-2025-10-05-at-4.07.36-PM.png)
 *Doctor's patient consultation interface with AI tools and transcription*
 
 1. **Accept Appointment**: Review and accept patient appointment requests
@@ -221,14 +221,14 @@ Your dashboard includes four main sections:
 
 #### 🎙️ **Real-Time Transcription**
 
-![Consultation Transcripts](images/Screenshot%202025-10-05%20at%204.08.15%20PM.png)
+![Consultation Transcripts](images/Screenshot-2025-10-05-at-4.08.15-PM.png)
 *Real-time conversation transcription during consultations*
 
 The platform provides live transcription of doctor-patient conversations, making it easy to capture detailed consultation notes and maintain accurate medical records.
 
 #### 🧠 **AI-Generated Medical Notes**
 
-![AI Notes](images/Screenshot%202025-10-05%20at%204.05.36%20PM.png)
+![AI Notes](images/Screenshot-2025-10-05-at-4.05.36-PM.png)
 *AI-generated medical notes with structured format*
 
 Our AI system automatically generates comprehensive medical notes from consultation transcriptions, including:
@@ -239,7 +239,7 @@ Our AI system automatically generates comprehensive medical notes from consultat
 
 #### 📋 **Digital Prescriptions**
 
-![Digital Prescription](images/Screenshot%202025-10-05%20at%204.05.53%20PM.png)
+![Digital Prescription](images/Screenshot-2025-10-05-at-4.05.53-PM.png)
 *Digital prescription creation with medication management*
 
 Create detailed digital prescriptions with:
@@ -253,7 +253,7 @@ Create detailed digital prescriptions with:
 
 ### AI Integration
 
-![Appointment Details Modal](images/Screenshot%202025-10-05%20at%204.07.25%20PM.png)
+![Appointment Details Modal](images/Screenshot-2025-10-05-at-4.07.25-PM.png)
 *Comprehensive appointment details with patient information and AI-generated insights*
 
 - **Speech Recognition**: Real-time voice-to-text conversion

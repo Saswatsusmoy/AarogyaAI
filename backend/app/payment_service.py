@@ -215,7 +215,7 @@ class PaymentService:
                         LIMIT $2
                     """, doctor_id, limit)
                     
-                    # Get logs for each payment
+                    # Get logs for each payment and flatten the structure
                     result = []
                     for payment in payments:
                         logs = await conn.fetch("""
@@ -224,10 +224,10 @@ class PaymentService:
                             ORDER BY "createdAt" ASC
                         """, payment["id"])
                         
-                        result.append({
-                            "payment": dict(payment),
-                            "logs": [dict(log) for log in logs]
-                        })
+                        # Flatten payment data and add logs
+                        payment_dict = dict(payment)
+                        payment_dict["logs"] = [dict(log) for log in logs]
+                        result.append(payment_dict)
                     
                     return result
                     

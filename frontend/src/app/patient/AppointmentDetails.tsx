@@ -231,6 +231,47 @@ export default function AppointmentDetailsModal({ appointmentId, onClose }: Appo
                 </div>
               </div>
 
+              {/* Video Meeting Link */}
+              {appointment.status === "ACCEPTED" && (
+                <div className="border border-green-500/30 bg-green-500/5 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <h3 className="font-medium text-green-400">Video Consultation</h3>
+                  </div>
+                  
+                  {/* Google Meet Join Section */}
+                  <div className="bg-white/5 p-4 rounded border border-white/10">
+                    <div className="text-sm mb-3">Join your video consultation with Dr. {appointment.doctor.username}:</div>
+                    
+                    {/* Join Button */}
+                    <div className="flex items-center justify-center mb-3">
+                      <a
+                        href="https://meet.google.com/gjv-yrwa-oop"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Join Video Call
+                      </a>
+                    </div>
+                    
+                    {/* Meeting Info */}
+                    <div className="bg-white/10 p-3 rounded border border-white/20">
+                      <div className="text-xs opacity-70 mb-1">Meeting Link:</div>
+                      <div className="text-sm font-mono break-all text-green-400">
+                        https://meet.google.com/gjv-yrwa-oop
+                      </div>
+                      <div className="text-xs opacity-70 mt-2">
+                        Click "Join Video Call" to open Google Meet in a new tab
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Payment Information */}
               {appointment.payment && (
                 <div className="border border-white/10 rounded p-4">

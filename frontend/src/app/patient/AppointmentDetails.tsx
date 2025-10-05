@@ -231,6 +231,30 @@ export default function AppointmentDetailsModal({ appointmentId, onClose }: Appo
                 </div>
               </div>
 
+              {/* Video Meeting Link */}
+              {appointment.status === "ACCEPTED" && (
+                <div className="border border-green-500/30 bg-green-500/5 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <h3 className="font-medium text-green-400">Video Consultation</h3>
+                  </div>
+                  <div className="bg-white/5 p-3 rounded border border-white/10">
+                    <div className="text-sm mb-2">Join your video consultation with Dr. {appointment.doctor.username}:</div>
+                    <a 
+                      href="https://meet.google.com/gjv-yrwa-oop" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 underline text-sm"
+                    >
+                      https://meet.google.com/gjv-yrwa-oop
+                    </a>
+                    <div className="text-xs opacity-70 mt-2">
+                      Click the link to join the Google Meet video call at your scheduled time
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Payment Information */}
               {appointment.payment && (
                 <div className="border border-white/10 rounded p-4">
